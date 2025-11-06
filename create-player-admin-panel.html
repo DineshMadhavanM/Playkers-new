@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Management - Admin Panel</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .team-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* Highlight for newly created team */
+        .table-success {
+            background-color: rgba(25, 135, 84, 0.1) !important;
+            transition: background-color 1s ease-out;
+        }
+        .action-buttons .btn {
+            margin: 0 2px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        .dataTables_wrapper .dataTables_filter input {
+            margin-left: 0.5em;
+        }
+        .badge {
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Team Management</h2>
+            <a href="team.html" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create New Team
+            </a>
+        </div>
+
+        <!-- Team List Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">All Teams</h5>
+                <div class="d-flex
+                <div class="input-group" style="width: 300px;">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" id="teamSearch" class="form-control" placeholder="Search teams...">
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="teamsTable" class="table table-striped table-hover" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Team</th>
+                                <th>Sport</th>
+                                <th>Captain</th>
+                                <th>Players</th>
+                                <th>Created By</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teamsTableBody">
+                            <!-- Teams will be loaded here via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Details Modal -->
+    <div class="modal fade" id="teamDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Team Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            <img id="teamLogoLarge" src="" alt="Team Logo" class="img-fluid rounded mb-3" style="max-height: 150px;">
+                        </div>
+                        <div class="col-md-9">
+                            <h3 id="teamName"></h3>
+                            <p id="teamDescription" class="text-muted"></p>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p><strong>Sport:</strong> <span id="teamSport"></span></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>Captain:</strong> <span id="teamCaptain"></span></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>Created:</strong> <span id="teamCreatedAt"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5>Team Players</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Player</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teamPlayersList">
+                                <!-- Team players will be listed here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Team Modal -->
+    <div class="modal fade" id="editTeamModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Team</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editTeamForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="editTeamId">
+                        <div class="mb-3">
+                            <label for="editTeamName" class="form-label">Team Name</label>
+                            <input type="text" class="form-control" id="editTeamName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTeamLogo" class="form-label">Team Logo</label>
+                            <input type="file" class="form-control" id="editTeamLogo" accept="image/*">
+                            <small class="text-muted">Leave empty to keep current logo</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTeamDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editTeamDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTeamSport" class="form-label">Sport</label>
+                            <select class="form-select" id="editTeamSport" required>
+                                <option value="Cricket">Cricket</option>
+                                <option value="Football">Football</option>
+                                <option value="Kabaddi">Kabaddi</option>
+                                <option value="Basketball">Basketball</option>
+                                <option value="Volleyball">Volleyball</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <script>
+        let teamsData = [];
+        
+        // Function to highlight and scroll to a team row
+        function highlightNewTeam(teamId) {
+            if (!teamId) return;
+            
+            // Remove any existing highlights
+            $('.table-success').removeClass('table-success');
+            
+            // Find the row with the team ID and highlight it
+            const row = $(`tr[data-team-id="${teamId}"]`);
+            if (row.length) {
+                row.addClass('table-success');
+                
+                // Scroll to the highlighted row
+                $('html, body').animate({
+                    scrollTop: row.offset().top - 100
+                }, 1000);
+                
+                // Remove highlight after 5 seconds
+                setTimeout(() => {
+                    row.removeClass('table-success');
+                }, 5000);
+                
+                // Clear the session storage
+                sessionStorage.removeItem('newTeamId');
+            }
+        }
+        
+        // Initialize DataTable and load teams
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if DataTable is already initialized
+            if ($.fn.DataTable.isDataTable('#teamsTable')) {
+                $('#teamsTable').DataTable().destroy();
+            }
+            
+            // Initialize DataTable with error handling
+            let dataTable;
+            try {
+                dataTable = $('#teamsTable').DataTable({
+                responsive: true,
+                order: [[5, 'desc']], // Sort by created date by default
+                drawCallback: function() {
+                    // Check for new team ID after table is drawn
+                    const newTeamId = sessionStorage.getItem('newTeamId');
+                    if (newTeamId) {
+                        // Small delay to ensure the row is rendered
+                        setTimeout(() => highlightNewTeam(newTeamId), 500);
+                    }
+                }
+                });
+            } catch (error) {
+                console.error('Error initializing DataTable:', error);
+                alert('Error initializing table. Please refresh the page.');
+                return;
+            }
+            
+            // Load teams
+            loadTeams();
+            
+            // Search functionality
+            $('#teamSearch').on('keyup', function() {
+                dataTable.search(this.value).draw();
+            });
+        });
+
+        // Load all teams
+        async function loadTeams() {
+            try {
+                const response = await fetch('/api/teams');
+                if (!response.ok) {
+                    throw new Error('Failed to load teams');
+                }
+                teamsData = await response.json();
+                renderTeamsTable(teamsData);
+            } catch (error) {
+                console.error('Error loading teams:', error);
+                alert('Failed to load teams. Please try again.');
+            }
+        }
+
+        // Render teams in the table
+        function renderTeamsTable(teams) {
+            const tbody = document.getElementById('teamsTableBody');
+            tbody.innerHTML = '';
+            
+            if (!teams || teams.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td colspan="7" class="text-center py-4">
+                        <div class="text-muted">No teams found. <a href="team.html">Create a new team</a> to get started.</div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                return;
+            }
+            
+            // Check for new team ID in session storage
+            const newTeamId = sessionStorage.getItem('newTeamId');
+            
+            teams.forEach(team => {
+                const tr = document.createElement('tr');
+                // Add team ID as data attribute for highlighting
+                tr.setAttribute('data-team-id', team._id);
+                
+                // Add highlight class if this is the newly created team
+                if (newTeamId && team._id === newTeamId) {
+                    tr.classList.add('table-success');
+                }
+                
+                // Format created date
+                const createdDate = new Date(team.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // Find captain
+                const captain = team.teamPlayers?.find(p => p.role === 'Captain');
+                
+                tr.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center">
+                            ${team.teamLogo ? 
+                                `<img src="${team.teamLogo}" alt="${team.teamName}" class="team-logo">` : 
+                                `<div class="team-logo bg-secondary text-white d-flex align-items-center justify-content-center">
+                                    ${team.teamName.charAt(0).toUpperCase()}
+                                </div>`
+                            }
+                            <div>
+                                <div>${team.teamName}</div>
+                                <small class="text-muted">${team.sportType || 'N/A'}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-primary">${team.sportType || 'N/A'}</span></td>
+                    <td>${captain ? captain.playerName : 'N/A'}</td>
+                    <td>${team.teamPlayers ? team.teamPlayers.length : 0} players</td>
+                    <td>${team.createdBy ? team.createdBy.name : 'N/A'}</td>
+                    <td>${createdDate}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewTeamDetails('${team._id}')" title="View">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="editTeam('${team._id}')" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="confirmDeleteTeam('${team._id}')" title="Delete">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                
+                // If this is the new team, scroll to it
+                if (newTeamId && team._id === newTeamId) {
+                    // Small delay to ensure the row is rendered
+                    setTimeout(() => {
+                        $('html, body').animate({
+                            scrollTop: $(tr).offset().top - 100
+                        }, 1000);
+                        
+                        // Remove highlight after 5 seconds
+                        setTimeout(() => {
+                            $(tr).removeClass('table-success');
+                            sessionStorage.removeItem('newTeamId');
+                        }, 5000);
+                    }, 300);
+                }
+            });
+
+            // Reinitialize DataTable to reflect changes
+            $('#teamsTable').DataTable().draw();
+        }
+
+        // View team details
+        async function viewTeamDetails(teamId) {
+            const team = teamsData.find(t => t._id === teamId);
+            if (!team) return;
+
+            // Set team details
+            document.getElementById('teamName').textContent = team.teamName;
+            document.getElementById('teamDescription').textContent = team.teamDescription || 'No description provided.';
+            document.getElementById('teamSport').textContent = team.sportType || 'N/A';
+            
+            const captain = team.teamPlayers?.find(p => p.role === 'Captain');
+            document.getElementById('teamCaptain').textContent = captain ? 
+                `${captain.playerName} (${captain.playerEmail || 'No email'})` : 'Not assigned';
+            
+            const createdAt = new Date(team.createdAt);
+            document.getElementById('teamCreatedAt').textContent = createdAt.toLocaleString();
+            
+            // Set team logo
+            const logoElement = document.getElementById('teamLogoLarge');
+            if (team.teamLogo) {
+                logoElement.src = team.teamLogo;
+                logoElement.style.display = 'block';
+            } else {
+                logoElement.style.display = 'none';
+            }
+            
+            // Render team players
+            const playersList = document.getElementById('teamPlayersList');
+            playersList.innerHTML = '';
+            
+            if (team.teamPlayers && team.teamPlayers.length > 0) {
+                team.teamPlayers.forEach(player => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="me-2">
+                                    ${player.playerName}
+                                    ${player.role === 'Captain' ? '<span class="badge bg-primary ms-2">Captain</span>' : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td>${player.role || 'Player'}</td>
+                        <td>${new Date(player.joinedAt || team.createdAt).toLocaleDateString()}</td>
+                    `;
+                    playersList.appendChild(row);
+                });
+            } else {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="3" class="text-center">No players in this team yet.</td>';
+                playersList.appendChild(row);
+            }
+            
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('teamDetailsModal'));
+            modal.show();
+        }
+
+        // Edit team
+        async function editTeam(teamId) {
+            const team = teamsData.find(t => t._id === teamId);
+            if (!team) return;
+
+            // Set form values
+            document.getElementById('editTeamId').value = team._id;
+            document.getElementById('editTeamName').value = team.teamName;
+            document.getElementById('editTeamDescription').value = team.teamDescription || '';
+            document.getElementById('editTeamSport').value = team.sportType || 'Cricket';
+            
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('editTeamModal'));
+            modal.show();
+        }
+
+        // Handle edit form submission
+        document.getElementById('editTeamForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const teamId = document.getElementById('editTeamId').value;
+            const formData = new FormData();
+            
+            formData.append('teamName', document.getElementById('editTeamName').value);
+            formData.append('teamDescription', document.getElementById('editTeamDescription').value);
+            formData.append('sportType', document.getElementById('editTeamSport').value);
+            
+            const logoFile = document.getElementById('editTeamLogo').files[0];
+            if (logoFile) {
+                formData.append('teamLogo', logoFile);
+            }
+            
+            try {
+                const response = await fetch(`/api/teams/${teamId}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to update team');
+                }
+                
+                // Close modal and refresh data
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editTeamModal'));
+                modal.hide();
+                
+                // Show success message
+                alert('Team updated successfully!');
+                
+                // Reload teams
+                await loadTeams();
+                
+            } catch (error) {
+                console.error('Error updating team:', error);
+                alert('Failed to update team: ' + error.message);
+            }
+        });
+
+        // Confirm team deletion
+        function confirmDeleteTeam(teamId) {
+            if (confirm('Are you sure you want to delete this team? This action cannot be undone.')) {
+                deleteTeam(teamId);
+            }
+        }
+
+        // Delete team
+        async function deleteTeam(teamId) {
+            try {
+                const response = await fetch(`/api/teams/${teamId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to delete team');
+                }
+                
+                // Show success message
+                alert('Team deleted successfully!');
+                
+                // Reload teams
+                await loadTeams();
+                
+            } catch (error) {
+                console.error('Error deleting team:', error);
+                alert('Failed to delete team: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

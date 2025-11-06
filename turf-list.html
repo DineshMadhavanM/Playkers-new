@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game List - PLAYKERS BOOKING</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: #ececf2;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+        .games-hero {
+            width: 100%;
+            background: linear-gradient(100deg, #1a237e 60%, #3949ab 100%);
+            color: #fff;
+            text-align: center;
+            padding: 60px 20px 40px 20px;
+            border-radius: 0 0 32px 32px;
+            box-shadow: 0 4px 24px rgba(26,35,126,0.10);
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .games-hero h1 {
+            font-size: 2.5em;
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px rgba(26,35,126,0.10);
+        }
+        .games-hero p {
+            font-size: 1.2em;
+            font-weight: 500;
+            margin-bottom: 0;
+            color: #fffde7;
+            text-shadow: 0 1px 4px rgba(26,35,126,0.10);
+        }
+        .games-list-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            justify-content: center;
+            align-items: flex-start;
+            margin: 0 auto 40px auto;
+            max-width: 1200px;
+            padding: 0 16px;
+        }
+        .game-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(26,35,126,0.10);
+            padding: 36px 28px 32px 28px;
+            flex: 1 1 220px;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .game-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 8px 32px rgba(26,35,126,0.16);
+        }
+        .game-icon {
+            margin-bottom: 18px;
+        }
+        .game-card h2 {
+            color: #1a237e;
+            font-size: 1.3em;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        .game-card p {
+            color: #444;
+            font-size: 1em;
+            font-weight: 400;
+        }
+        @media (max-width: 900px) {
+            .games-list-section {
+                flex-direction: column;
+                gap: 28px;
+                align-items: center;
+            }
+            .game-card {
+                max-width: 95vw;
+            }
+        }
+        @media (max-width: 500px) {
+            .games-hero {
+                padding: 36px 8px 20px 8px;
+                border-radius: 0 0 18px 18px;
+            }
+            .games-hero h1 {
+                font-size: 1.3em;
+            }
+            .games-hero p {
+                font-size: 1em;
+            }
+            .game-card {
+                padding: 20px 8px 16px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="games-hero">
+        <h1>All Games</h1>
+        <p>Choose your favorite sport to book a turf or ground and start playing!</p>
+    </div>
+    <div class="games-list-section">
+        <div class="game-card">
+            <div class="game-icon">
+                <!-- Cricket Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ffb300"/><rect x="11" y="6" width="2" height="8" rx="1" fill="#1a237e"/><rect x="9" y="15" width="6" height="2" rx="1" fill="#1a237e"/></svg>
+            </div>
+            <h2><a href="cric-turf.html">Cricket</a></h2>
+            <p>Book pitches for cricket matches and practice sessions.</p>
+        </div>
+        <div class="game-card">
+            <div class="game-icon">
+                <!-- Football Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#43a047"/><circle cx="12" cy="12" r="5" fill="#fff"/><circle cx="12" cy="12" r="2" fill="#1a237e"/></svg>
+            </div>
+            <h2><a href="cric-turf.html">Football</a></h2>
+            <p>Book turf for football games and tournaments.</p>
+        </div>
+        <div class="game-card">
+            <div class="game-icon">
+                <!-- Tennis Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ffd54f"/><ellipse cx="12" cy="12" rx="6" ry="2" fill="#1a237e"/></svg>
+            </div>
+            <h2>Tennis</h2>
+            <p>Book courts for tennis matches and coaching.</p>
+        </div>
+        <div class="game-card">
+            <div class="game-icon">
+                <!-- Kabaddi Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ff7043"/><rect x="8" y="10" width="8" height="4" rx="2" fill="#fff"/></svg>
+            </div>
+            <h2>Kabaddi</h2>
+            <p>Book grounds for kabaddi matches and training.</p>
+        </div>
+        <div class="game-card">
+            <div class="game-icon">
+                <!-- Volleyball Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#1976d2"/><ellipse cx="12" cy="12" rx="6" ry="2" fill="#fff"/><ellipse cx="12" cy="12" rx="2" ry="6" fill="#fff"/></svg>
+            </div>
+            <h2>Volleyball</h2>
+            <p>Book courts for volleyball games and events.</p>
+        </div>
+        <div class="game-card">
+            <div class="game-icon">
+                <!-- Handball Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ab47bc"/><circle cx="12" cy="12" r="5" fill="#fff"/><rect x="11" y="7" width="2" height="10" rx="1" fill="#ab47bc"/></svg>
+            </div>
+            <h2>Handball</h2>
+            <p>Book courts for handball matches and practice.</p>
+        </div>
+    </div>
+</body>
+</html>

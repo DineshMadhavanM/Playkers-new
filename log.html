@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Play Requests - PLAYKERS BOOKING</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { background: #ececf2; margin: 0; font-family: 'Montserrat', Arial, sans-serif; }
+    .hero {
+      width: 100%;
+      background: linear-gradient(100deg, #1a237e 60%, #3949ab 100%);
+      color: #fff;
+      text-align: center;
+      padding: 60px 20px 40px 20px;
+      border-radius: 0 0 32px 32px;
+      box-shadow: 0 4px 24px rgba(26,35,126,0.10);
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero h1 { font-size: 2.5em; font-weight: 800; margin-bottom: 16px; letter-spacing: 1px; text-shadow: 0 2px 8px rgba(26,35,126,0.10); }
+    .hero p { font-size: 1.2em; font-weight: 500; margin-bottom: 0; color: #fffde7; text-shadow: 0 1px 4px rgba(26,35,126,0.10); }
+    .login-section, .logout-section { max-width: 520px; margin: 32px auto 0 auto; text-align: center; }
+    .login-section input { width: 70%; padding: 10px; border-radius: 8px; border: 1.5px solid #bdbdbd; font-size: 1em; margin-bottom: 12px; }
+    .logout-section { margin-bottom: 24px; }
+    .btn { background: #1a237e; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1.1em; font-weight: 700; cursor: pointer; margin-top: 8px; margin-bottom: 8px; }
+    .btn:hover { background: #ffb300; color: #1a237e; }
+    .main-content { max-width: 520px; margin: 0 auto; }
+    .messages-list { margin-top: 24px; }
+    .player-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(26,35,126,0.10); padding: 16px; margin-bottom: 16px; }
+    .status-badge { display: inline-block; padding: 2px 10px; border-radius: 8px; font-size: 0.9em; margin-left: 8px; }
+    .status-badge.pending { background: #bdbdbd; color: #fff; }
+    .status-badge.ready { background: #43a047; color: #fff; }
+    .status-badge.notready { background: #e53935; color: #fff; }
+    .request-btn { background: #1976d2; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; margin-top: 10px; margin-right: 8px; cursor: pointer; }
+    .request-btn:hover { background: #ffb300; color: #1a237e; }
+    @media (max-width: 600px) {
+      .main-content { max-width: 98vw; }
+      .login-section input { width: 95%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>My Play Requests</h1>
+    <p>View and respond to requests from other players who want to join your match.</p>
+  </div>
+  <div class="login-section" id="loginSection">
+    <form id="loginForm">
+      <h2>Login</h2>
+      <input name="playerName" placeholder="Enter your player name" required />
+      <button type="submit" class="btn">Login</button>
+    </form>
+  </div>
+  <div class="logout-section" id="logoutSection" style="display:none;">
+    <span id="welcomeMsg"></span>
+    <button class="btn" id="logoutBtn">Logout</button>
+  </div>
+  <div class="main-content" id="dashboard" style="display:none;">
+    <h2>Received Play Requests</h2>
+    <div class="messages-list" id="receivedList"></div>
+    <h2>Sent Play Requests</h2>
+    <div class="messages-list" id="sentList"></div>
+  </div>
+  <script>
+let playerName = "";
+
+// Login logic
+const loginForm = document.getElementById('loginForm');
+const loginSection = document.getElementById('loginSection');
+const logoutSection = document.getElementById('logoutSection');
+const dashboard = document.getElementById('dashboard');
+const welcomeMsg = document.getElementById('welcomeMsg');
+const logoutBtn = document.getElementById('logoutBtn');
+
+loginForm.onsubmit = function(e) {
+  e.preventDefault();
+  playerName = this.playerName.value.trim();
+  if (!playerName) return;
+  loginSection.style.display = 'none';
+  logoutSection.style.display = '';
+  dashboard.style.display = '';
+  welcomeMsg.textContent = `Welcome, ${playerName}!`;
+  fetchMessages();
+};
+
+logoutBtn.onclick = function() {
+  playerName = "";
+  loginSection.style.display = '';
+  logoutSection.style.display = 'none';
+  dashboard.style.display = 'none';
+};
+
+// Fetch and render received and sent messages
+async function fetchMessages() {
+  // Received
+  const res1 = await fetch(`http://localhost:5000/api/messages?receiverName=${encodeURIComponent(playerName)}`);
+  const received = await res1.json();
+  renderMessages(received, 'receivedList', true);
+
+  // Sent
+  const res2 = await fetch(`http://localhost:5000/api/messages?senderName=${encodeURIComponent(playerName)}`);
+  const sent = await res2.json();
+  renderMessages(sent, 'sentList', false);
+}
+
+function renderMessages(messages, listId, canRespond) {
+  const list = document.getElementById(listId);
+  if (!messages.length) {
+    list.innerHTML = '<i>No requests found.</i>';
+    return;
+  }
+  list.innerHTML = messages.map(m => `
+    <div class="player-card">
+      <b>${canRespond ? 'From' : 'To'}:</b> ${canRespond ? m.senderName : m.receiverName} ${canRespond ? '(' + m.phone + ')' : ''}<br>
+      <b>Place:</b> ${m.place}<br>
+      <b>Game:</b> ${m.gameType}<br>
+      <b>Date/Time:</b> ${m.date} ${m.time}<br>
+      <b>Status:</b> <span class="status-badge ${m.status.replace(' ', '')}">${m.status}</span><br>
+      <b>Received:</b> ${new Date(m.createdAt).toLocaleString()}<br>
+      ${canRespond ? `
+        <button class="request-btn" onclick="respondToRequest('${m._id}', 'ready')">Ready</button>
+        <button class="request-btn" onclick="respondToRequest('${m._id}', 'not ready')">Not Ready</button>
+      ` : ''}
+    </div>
+  `).join('');
+}
+
+window.respondToRequest = async function(id, status) {
+  await fetch(`http://localhost:5000/api/messages/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  alert('Response sent!');
+  fetchMessages();
+};
+  </script>
+</body>
+</html>

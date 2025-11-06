@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create or Manage Team - Playker</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .form-step {
+            display: none;
+        }
+        .form-step.active {
+            display: block;
+        }
+        .player-card {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background-color: #e9ecef;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            color: #6c757d;
+        }
+        .step.active .step-number {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .step.completed .step-number {
+            background-color: #198754;
+            color: white;
+        }
+        .step-line {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            right: -50%;
+            height: 2px;
+            background-color: #e9ecef;
+            z-index: -1;
+        }
+        .step:last-child .step-line {
+            display: none;
+        }
+        #playerList {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .preview-logo {
+            max-width: 150px;
+            max-height: 150px;
+            margin: 10px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h2 class="mb-4">Create or Manage Team</h2>
+        
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step active" id="step1-indicator">
+                <div class="step-number">1</div>
+                <div>Basic Info</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step" id="step2-indicator">
+                <div class="step-number">2</div>
+                <div>Add Players</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step" id="step3-indicator">
+                <div class="step-number">3</div>
+                <div>Assign Roles</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step" id="step4-indicator">
+                <div class="step-number">4</div>
+                <div>Review & Save</div>
+            </div>
+        </div>
+
+        <!-- Team Creation Form -->
+        <form id="teamForm" enctype="multipart/form-data">
+            <!-- Hidden field for creator ID -->
+            <input type="hidden" id="creatorId" name="creatorId">
+            
+            <!-- Step 1: Basic Info -->
+            <div class="form-step active" id="step1">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Team Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="teamName" class="form-label">Team Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="teamName" name="teamName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="teamLogo" class="form-label">Team Logo</label>
+                            <input type="file" class="form-control" id="teamLogo" name="teamLogo" accept="image/*">
+                            <img id="logoPreview" class="preview-logo img-thumbnail mt-2">
+                        </div>
+                        <div class="mb-3">
+                            <label for="teamDescription" class="form-label">Team Description</label>
+                            <textarea class="form-control" id="teamDescription" name="teamDescription" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-primary" onclick="nextStep(1)">Next: Add Players</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Add Players -->
+            <div class="form-step" id="step2">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Add Team Players</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <label for="playerSearch" class="form-label">Search Registered Players</label>
+                                <div class="input-group">
+                                    <input type="email" class="form-control" id="playerSearch" 
+                                           placeholder="Start typing player's email" 
+                                           autocomplete="off"
+                                           oninput="searchUserByEmail()">
+                                    <button class="btn btn-outline-secondary" type="button" id="searchPlayerBtn" onclick="searchUserByEmail(true)">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </div>
+                                <div id="emailSuggestions" class="list-group position-absolute w-100" style="z-index: 1000; display: none;">
+                                    <!-- Email suggestions will appear here -->
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="playerRole" class="form-label">Role</label>
+                                <select class="form-select" id="playerRole" required>
+                                    <option value="" disabled selected>Select a role</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Manager">Manager</option>
+                                    <option value="Coach">Coach</option>
+                                    <option value="Captain">Captain</option>
+                                    <option value="Vice Captain">Vice Captain</option>
+                                    <option value="Player">Player</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="playerSearchResults" class="mb-4">
+                            <!-- Search results will be populated here -->
+                        </div>
+                        
+                        <h6>Team Players</h6>
+                        <div id="playerList">
+                            <!-- Players will be added here -->
+                            <div class="alert alert-info">No players added yet. Search and add players above.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep(2)">Previous</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next: Assign Roles</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Assign Roles -->
+            <div class="form-step" id="step3">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Assign Player Roles</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Set roles for each team member. You can assign any role you like (e.g., Batsman, Bowler, Goalkeeper, etc.)</p>
+                        <div id="roleAssignment">
+                            <!-- Player role assignment inputs will be added here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep(3)">Previous</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep(3)">Next: Review & Save</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Review & Save -->
+            <div class="form-step" id="step4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Review Team Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center mb-3">
+                                    <img id="reviewLogo" src="" class="img-thumbnail mb-2" style="max-height: 200px; display: none;">
+                                    <h4 id="reviewTeamName"></h4>
+                                </div>
+                                <p id="reviewTeamDescription" class="text-muted"></p>
+                            </div>
+                            <div class="col-md-8">
+                                <h5>Team Players</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Player</th>
+                                                <th>Email</th>
+                                                <th>Role</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="reviewPlayersList">
+                                            <!-- Player list will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep(4)">Previous</button>
+                    <button type="submit" class="btn btn-success">Save Team</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Axios for HTTP requests -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <script>
+        // Global variables
+        let currentStep = 1;
+        let teamPlayers = [];
+        
+        // Initialize the form
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get creator ID from session or authentication context
+            // This should be replaced with actual logged-in user ID from your auth system
+            const creatorId = 'loggedInUserId'; // Placeholder - replace with actual user ID
+            document.getElementById('creatorId').value = creatorId;
+            
+            // Preview logo when file is selected
+            document.getElementById('teamLogo').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('logoPreview');
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Search for players when typing
+            document.getElementById('playerSearch').addEventListener('input', function() {
+                const query = this.value.trim();
+                if (query.length >= 2) {
+                    searchUserByEmail();
+                } else {
+                    document.getElementById('emailSuggestions').style.display = 'none';
+                }
+            });
+
+            // Handle click outside to close suggestions
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#playerSearch')) {
+                    document.getElementById('emailSuggestions').style.display = 'none';
+                }
+            });
+
+            // Search for players
+            document.getElementById('searchPlayerBtn').addEventListener('click', searchPlayer);
+            document.getElementById('playerSearch').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchPlayer();
+                }
+            });
+            
+            // Form submission
+            document.getElementById('teamForm').addEventListener('submit', saveTeam);
+        });
+        
+        // Navigation functions
+        function nextStep(step) {
+            // Validate current step before proceeding
+            if (!validateStep(step)) {
+                return;
+            }
+            
+            // Update UI
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            document.getElementById(`step${currentStep}-indicator`).classList.remove('active');
+            
+            currentStep = step + 1;
+            
+            // If moving to step 3, update role assignment UI
+            if (currentStep === 3) {
+                updateRoleAssignment();
+            }
+            // If moving to step 4, update review section
+            else if (currentStep === 4) {
+                updateReviewSection();
+            }
+            
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            document.getElementById(`step${currentStep}-indicator`).classList.add('active');
+            
+            // Mark previous step as completed
+            document.getElementById(`step${step}-indicator`).classList.add('completed');
+        }
+        
+        function prevStep(step) {
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            document.getElementById(`step${currentStep}-indicator`).classList.remove('active');
+            
+            currentStep = step - 1;
+            
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            document.getElementById(`step${currentStep}-indicator`).classList.add('active');
+        }
+        
+        function validateStep(step) {
+            if (step === 1) {
+                const teamName = document.getElementById('teamName').value.trim();
+                if (!teamName) {
+                    alert('Please enter a team name');
+                    return false;
+                }
+            } else if (step === 2) {
+                if (teamPlayers.length < 1) {
+                    alert('Please add at least one player to the team');
+                    return false;
+                }
+            } else if (step === 3) {
+                // Validate that all players have roles
+                const roleInputs = document.querySelectorAll('.player-role-input');
+                for (const input of roleInputs) {
+                    if (!input.value.trim()) {
+                        alert('Please assign a role to each player');
+                        input.focus();
+                        return false;
+                    }
+                }
+                
+                // Update player roles from inputs
+                updatePlayerRoles();
+            }
+            return true;
+        }
+        
+        // Search for users by email (with debounce)
+        let searchTimeout;
+        
+        async function searchUserByEmail(forceSearch = false) {
+            const searchInput = document.getElementById('playerSearch');
+            const searchTerm = searchInput.value.trim();
+            const suggestionsContainer = document.getElementById('emailSuggestions');
+            
+            // Clear previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            // Hide suggestions if search term is too short
+            if (searchTerm.length < 2) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+            
+            // Show loading state
+            suggestionsContainer.innerHTML = '<div class="list-group-item">Searching...</div>';
+            suggestionsContainer.style.display = 'block';
+            
+            // Debounce the search
+            searchTimeout = setTimeout(async () => {
+                try {
+                    console.log('Searching for users with email:', searchTerm);
+                    const apiUrl = `http://localhost:5502/api/users/search?email=${encodeURIComponent(searchTerm)}`;
+                    console.log('API URL:', apiUrl);
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'include' // Include cookies for authenticated requests
+                    });
+                    
+                    console.log('Response status:', response.status);
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('API Error:', errorData);
+                        throw new Error(errorData.error || 'Failed to search users');
+                    }
+                    
+                    const users = await response.json();
+                    console.log('Found users:', users);
+                    
+                    // Clear previous suggestions
+                    suggestionsContainer.innerHTML = '';
+                    
+                    if (users.length === 0) {
+                        suggestionsContainer.innerHTML = `
+                            <div class="list-group-item text-muted">
+                                No registered users found with this email.
+                                ${!forceSearch ? 'Keep typing...' : ''}
+                            </div>`;
+                        return;
+                    }
+                    
+                    // Display suggestions
+                    users.forEach(user => {
+                        // Check if user is already in the team
+                        const isInTeam = teamPlayers.some(p => p.id === user._id || p.email === user.email);
+                        
+                        const suggestionItem = document.createElement('button');
+                        suggestionItem.type = 'button';
+                        suggestionItem.className = `list-group-item list-group-item-action ${isInTeam ? 'disabled' : ''}`;
+                        suggestionItem.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${user.name || 'User'}</strong>
+                                    <div class="text-muted small">${user.email}</div>
+                                </div>
+                                ${isInTeam ? 
+                                    '<span class="badge bg-secondary">Already in team</span>' : 
+                                    '<i class="fas fa-plus text-primary"></i>'
+                                }
+                            </div>
+                        `;
+                        
+                        if (!isInTeam) {
+                            suggestionItem.onclick = () => {
+                                const role = document.getElementById('playerRole').value.trim() || 'Player';
+                                addTeamPlayer({
+                                    id: user._id,
+                                    name: user.name || user.email.split('@')[0],
+                                    email: user.email,
+                                    role: role
+                                });
+                                searchInput.value = '';
+                                suggestionsContainer.style.display = 'none';
+                            };
+                        }
+                        
+                        suggestionsContainer.appendChild(suggestionItem);
+                    });
+                    
+                    // If this was a forced search (button click) and no results, show message
+                    if (forceSearch && users.length === 0) {
+                        const resultsDiv = document.getElementById('playerSearchResults');
+                        resultsDiv.innerHTML = `
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                This email is not registered. Please ask the player to sign up first.
+                            </div>`;
+                    }
+                    
+                } catch (error) {
+                    console.error('Error searching users:', error);
+                    suggestionsContainer.innerHTML = `
+                        <div class="list-group-item text-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Error searching for users. Please try again.
+                        </div>`;
+                }
+            }, forceSearch ? 0 : 300); // No delay for button click, 300ms for typing
+        }
+        
+        function addTeamPlayer(player) {
+            // Check if player already exists
+            const existingPlayerIndex = teamPlayers.findIndex(p => p.id === player.id || p.email === player.email);
+            
+            if (existingPlayerIndex === -1) {
+                // Add new player with MongoDB _id
+                const newPlayer = {
+                    _id: player.id,  // MongoDB _id
+                    name: player.name,
+                    email: player.email,
+                    role: player.role || 'Player',
+                    isCaptain: player.isCaptain || false
+                };
+                
+                teamPlayers.push(newPlayer);
+                updatePlayerList();
+                
+                // Clear search and hide suggestions
+                document.getElementById('playerSearch').value = '';
+                document.getElementById('emailSuggestions').style.display = 'none';
+                
+                // Show success message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.role = 'alert';
+                alertDiv.innerHTML = `
+                    <i class="fas fa-check-circle me-2"></i>
+                    ${player.name} has been added to your team.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                
+                const resultsDiv = document.getElementById('playerSearchResults');
+                resultsDiv.innerHTML = '';
+                resultsDiv.appendChild(alertDiv);
+                
+                // Auto-hide alert after 3 seconds
+                setTimeout(() => {
+                    alertDiv.classList.remove('show');
+                    setTimeout(() => alertDiv.remove(), 150);
+                }, 3000);
+                
+                // If this was the first player added, update the role assignment section
+                if (teamPlayers.length === 1) {
+                    updateRoleAssignment();
+                }
+            } else {
+                // Player already exists in team
+                const resultsDiv = document.getElementById('playerSearchResults');
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ${player.name} is already in your team.
+                    </div>`;
+            }
+        }
+        
+        function removePlayer(playerId) {
+            // Don't allow removing the creator (captain)
+            if (playerId === document.getElementById('creatorId').value) {
+                alert('You cannot remove yourself (the team captain) from the team.');
+                return;
+            }
+            
+            teamPlayers = teamPlayers.filter(p => p.id !== playerId);
+            updatePlayerList();
+        }
+        
+        function updatePlayerList() {
+            const playerList = document.getElementById('playerList');
+            
+            if (teamPlayers.length === 0) {
+                playerList.innerHTML = '<div class="alert alert-info">No players added yet. Search and add players above.</div>';
+                return;
+            }
+            
+            playerList.innerHTML = '';
+            
+            teamPlayers.forEach(player => {
+                const playerCard = document.createElement('div');
+                playerCard.className = 'player-card';
+                playerCard.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">${player.name} ${player.isCaptain ? '<span class="badge bg-primary">Captain</span>' : ''}</h6>
+                            <p class="mb-0 text-muted small">${player.email}</p>
+                            <span class="badge bg-secondary">${player.role || 'Player'}</span>
+                        </div>
+                        ${!player.isCaptain ? `
+                        <button class="btn btn-outline-danger btn-sm" onclick="removePlayer('${player.id}')">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                        ` : ''}
+                    </div>
+                `;
+                playerList.appendChild(playerCard);
+            });
+        }
+        
+        function updateRoleAssignment() {
+            const roleAssignment = document.getElementById('roleAssignment');
+            roleAssignment.innerHTML = '';
+            
+            teamPlayers.forEach((player, index) => {
+                const roleDiv = document.createElement('div');
+                roleDiv.className = 'mb-3';
+                roleDiv.innerHTML = `
+                    <div class="input-group">
+                        <span class="input-group-text" style="min-width: 200px;">${player.name} ${player.isCaptain ? '(Captain)' : ''}</span>
+                        <input type="text" 
+                               class="form-control player-role-input" 
+                               placeholder="Enter role (e.g., Batsman, Goalkeeper)" 
+                               value="${player.role || ''}"
+                               data-player-id="${player.id}">
+                    </div>
+                `;
+                roleAssignment.appendChild(roleDiv);
+            });
+        }
+        
+        function updatePlayerRoles() {
+            const roleInputs = document.querySelectorAll('.player-role-input');
+            
+            roleInputs.forEach(input => {
+                const playerId = input.dataset.playerId;
+                const role = input.value.trim();
+                
+                const player = teamPlayers.find(p => p.id === playerId);
+                if (player) {
+                    player.role = role;
+                }
+            });
+        }
+        
+        function updateReviewSection() {
+            // Update team info
+            document.getElementById('reviewTeamName').textContent = document.getElementById('teamName').value;
+            document.getElementById('reviewTeamDescription').textContent = document.getElementById('teamDescription').value || 'No description provided.';
+            
+            // Update logo preview if available
+            const logoPreview = document.getElementById('logoPreview');
+            const reviewLogo = document.getElementById('reviewLogo');
+            if (logoPreview.src) {
+                reviewLogo.src = logoPreview.src;
+                reviewLogo.style.display = 'block';
+            } else {
+                reviewLogo.style.display = 'none';
+            }
+            
+            // Update players list
+            const playersList = document.getElementById('reviewPlayersList');
+            playersList.innerHTML = '';
+            
+            teamPlayers.forEach(player => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${player.name} ${player.isCaptain ? '<span class="badge bg-primary">Captain</span>' : ''}</td>
+                    <td>${player.email}</td>
+                    <td>${player.role || 'Player'}</td>
+                `;
+                playersList.appendChild(row);
+            });
+        }
+        
+        // Form submission
+        async function saveTeam(e) {
+            e.preventDefault();
+            
+            // Final validation
+            if (!validateStep(4)) {
+                return;
+            }
+            
+            // Check if user is logged in
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!currentUser || !currentUser._id) {
+                if (typeof Swal !== 'undefined') {
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Authentication Required',
+                        text: 'You must be logged in to create a team',
+                        confirmButtonText: 'Go to Login',
+                        allowOutsideClick: false
+                    }).then(() => {
+                        window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                    });
+                } else {
+                    alert('You must be logged in to create a team');
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                }
+                return;
+            }
+            
+            // Check if user has admin access
+            const isAdmin = currentUser.role === 'admin' || currentUser.role === 'superadmin';
+            
+            // Prepare form data
+            const formData = new FormData();
+            const teamName = document.getElementById('teamName').value.trim();
+            const teamDescription = document.getElementById('teamDescription').value.trim();
+            const sportType = document.getElementById('sportType').value;
+            
+            formData.append('teamName', teamName);
+            formData.append('teamDescription', teamDescription);
+            formData.append('sportType', sportType);
+            
+            // Add team logo if selected
+            const logoInput = document.getElementById('teamLogo');
+            if (logoInput.files.length > 0) {
+                formData.append('teamLogo', logoInput.files[0]);
+            }
+            
+            // Prepare players data with current user as captain if not already in the list
+            const currentUserInTeam = teamPlayers.some(p => p.id === currentUser._id);
+            const playersToSend = [...teamPlayers];
+            
+            if (!currentUserInTeam) {
+                playersToSend.unshift({
+                    playerId: currentUser._id,
+                    playerName: currentUser.name,
+                    role: 'Captain',
+                    joinedAt: new Date().toISOString()
+                });
+            }
+            
+            formData.append('players', JSON.stringify(playersToSend));
+            
+            // Show loading state
+            const submitBtn = document.querySelector('#teamForm button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creating Team...';
+            
+            try {
+                // Get auth token
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('Authentication required. Please log in again.');
+                }
+                
+                const response = await fetch('/api/teams', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                    // Don't set Content-Type header when using FormData with files
+                    // The browser will set it automatically with the correct boundary
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to create team');
+                }
+                
+                const result = await response.json();
+                const teamId = (result.data && result.data._id) || result.team?._id;
+                
+                if (!teamId) {
+                    throw new Error('Failed to create team: No team ID returned from server');
+                }
+                
+                // Store the new team ID in session storage
+                sessionStorage.setItem('newTeamId', teamId);
+                
+                // Show success message and handle redirection
+                if (typeof Swal !== 'undefined') {
+                    const { value: action } = await Swal.fire({
+                        icon: 'success',
+                        title: 'Team Created!',
+                        text: 'Team created successfully! What would you like to do next?',
+                        showDenyButton: true,
+                        showCancelButton: true,
+                        confirmButtonText: 'View Team',
+                        denyButtonText: 'Manage Teams',
+                        cancelButtonText: 'Create Another',
+                        buttonsStyling: false,
+                        customClass: {
+                            confirmButton: 'btn btn-success me-2',
+                            denyButton: 'btn btn-primary me-2',
+                            cancelButton: 'btn btn-outline-secondary'
+                        }
+                    });
+
+                    if (action === 'confirm') {
+                        // Redirect to team stats page
+                        window.location.href = `/team-stat.html?teamId=${teamId}`;
+                    } else if (action === 'deny') {
+                        // Redirect to team management
+                        if (isAdmin) {
+                            window.location.href = '/admin-panel.html?tab=teams';
+                        } else {
+                            window.location.href = '/teams.html';
+                        }
+                    } else {
+                        // Reset form and redirect to create-player-admin-panel.html
+                        document.getElementById('teamForm').reset();
+                        window.location.href = 'create-player-admin-panel.html';
+                    }
+                } else {
+                    // Fallback for when SweetAlert2 is not available
+                    alert('Team created successfully!');
+                    window.location.href = 'create-player-admin-panel.html';
+                }
+                
+            } catch (error) {
+                console.error('Error creating team:', error);
+                
+                // Show error message with SweetAlert2 or native alert
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message || 'Failed to create team. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    alert(error.message || 'Failed to create team. Please check your connection and try again.');
+                }
+                
+                // If unauthorized, redirect to login
+                if (error.message && (error.message.includes('auth') || error.message.includes('login'))) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                }
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        }
+    </script>
+</body>
+</html>

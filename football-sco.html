@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Match Scorecard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .scoreboard { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); padding: 20px; margin-bottom: 20px; }
+        .team-logo { width: 80px; height: 80px; object-fit: contain; margin: 0 auto; display: block; }
+        .score { font-size: 4rem; font-weight: 700; line-height: 1; }
+        .match-time { font-size: 1.2rem; background: rgba(0, 0, 0, 0.2); padding: 5px 15px; border-radius: 20px; display: inline-block; margin-top: 10px; }
+        .match-info-card { background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); padding: 15px; margin-bottom: 20px; height: 100%; }
+        .event-timeline { max-height: 400px; overflow-y: auto; padding: 10px; }
+        .event-item { border-left: 3px solid #0d6efd; padding: 8px 12px; margin-bottom: 10px; background: white; border-radius: 0 5px 5px 0; }
+        .player-card { transition: all 0.2s; cursor: pointer; padding: 10px; margin-bottom: 5px; border-radius: 5px; border: 1px solid #dee2e6; }
+        .player-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        .stat-card { background: white; border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); height: 100%; text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #0d6efd; margin-bottom: 5px; }
+        .stat-label { color: #6c757d; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        .player-number { display: inline-block; width: 25px; height: 25px; background: #0d6efd; color: white; border-radius: 50%; text-align: center; line-height: 25px; margin-right: 8px; font-size: 0.8rem; }
+        .player-position { font-size: 0.8rem; color: #6c757d; margin-left: 5px; }
+        .captain-badge { background: #ffc107; color: #000; font-size: 0.7rem; padding: 2px 5px; border-radius: 3px; margin-left: 5px; }
+        .player-card.active { border: 2px solid #0d6efd; background-color: #f8f9ff; }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Match Header -->
+        <div class="text-center mb-4">
+            <h1 class="display-5 fw-bold">Football Match Scorecard</h1>
+            <div class="controls text-center mb-4">
+                <button class="btn btn-primary" id="setupMatchBtn"><i class="bi bi-gear-fill"></i> Setup Match</button>
+                <button class="btn btn-success" id="startBtn" disabled><i class="bi bi-play-circle-fill"></i> Start Match</button>
+                <button class="btn btn-light" id="pauseBtn" disabled><i class="bi bi-pause-fill"></i> Pause</button>
+                <button class="btn btn-secondary" id="endHalfBtn" disabled><i class="bi bi-stopwatch-fill"></i> End Half</button>
+                <button class="btn btn-info" id="addEventBtn" onclick="openAddEventModal()" disabled><i class="bi bi-plus-circle-fill"></i> Add Event</button>
+                <button id="extraTimeBtn" class="btn btn-warning d-none" onclick="startExtraTime()"><i class="bi bi-clock-history"></i> Start Extra Time</button>
+                <button id="endMatchBtn" class="btn btn-danger d-none" onclick="endMatch()"><i class="bi bi-flag-fill"></i> End Match</button>
+            </div>
+        </div>
+
+        <!-- Scoreboard -->
+        <div class="scoreboard">
+            <div class="row align-items-center">
+                <div class="col-md-5 text-center">
+                    <h2><span id="teamAName">Team A</span> <i class="bi bi-pencil-square fs-5 align-middle" style="cursor: pointer;" onclick="openEditTeamNameModal('A')"></i></h2>
+                    <img src="https://via.placeholder.com/80" alt="Team A" class="team-logo mb-2">
+                    <div class="formation" id="teamAFormation">4-4-2</div>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="score"><span id="teamAScore">0</span> - <span id="teamBScore">0</span></div>
+                    <div class="match-time mt-2" id="matchTimer">00:00</div>
+                    <div class="injury-time mt-1" id="injuryTime" style="display: none;">
+                        <span class="badge bg-danger">+<span id="injuryTimeValue">0</span>'</span>
+                    </div>
+                    <div class="match-half mt-2" id="matchHalf">1st Half</div>
+                </div>
+                <div class="col-md-5 text-center">
+                    <h2><span id="teamBName">Team B</span> <i class="bi bi-pencil-square fs-5 align-middle" style="cursor: pointer;" onclick="openEditTeamNameModal('B')"></i></h2>
+                    <img src="https://via.placeholder.com/80" alt="Team B" class="team-logo mb-2">
+                    <div class="formation" id="teamBFormation">4-3-3</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="row">
+            <!-- Team Lineups -->
+            <div class="col-lg-8">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 id="teamALineupTitle">Team A Lineup <button class="btn btn-sm btn-outline-primary float-end" onclick="openAddPlayerModal('A')"><i class="bi bi-plus"></i> Add Player</button></h4>
+                        <div id="teamALineup"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <h4 id="teamBLineupTitle">Team B Lineup <button class="btn btn-sm btn-outline-primary float-end" onclick="openAddPlayerModal('B')"><i class="bi bi-plus"></i> Add Player</button></h4>
+                        <div id="teamBLineup"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Events -->
+            <div class="col-lg-4">
+                <h4>Match Events</h4>
+                <div class="event-timeline bg-light p-2 rounded" id="matchEvents">
+                    <!-- Events will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Match Statistics -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <h4>Match Statistics</h4>
+                <div class="row" id="matchStats">
+                    <!-- Statistics will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Match Setup Modal -->
+    <div class="modal fade" id="matchSetupModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Match Setup</h5>
+                </div>
+                <div class="modal-body">
+                    <form id="matchSetupForm">
+                        <div class="row">
+                            <div class="col-md-6 border-end">
+                                <h5>Team A</h5>
+                                <div class="mb-3">
+                                    <label for="setupTeamAName" class="form-label">Team Name</label>
+                                    <input type="text" class="form-control" id="setupTeamAName" value="Team A" required>
+                                </div>
+                                <h6>Players</h6>
+                                <div id="setupTeamAPlayers" class="mb-2" style="max-height: 250px; overflow-y: auto;">
+                                    <!-- Player inputs will be added here -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addSetupPlayer('A')"><i class="bi bi-plus"></i> Add Player</button>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Team B</h5>
+                                <div class="mb-3">
+                                    <label for="setupTeamBName" class="form-label">Team Name</label>
+                                    <input type="text" class="form-control" id="setupTeamBName" value="Team B" required>
+                                </div>
+                                <h6>Players</h6>
+                                <div id="setupTeamBPlayers" class="mb-2" style="max-height: 250px; overflow-y: auto;">
+                                    <!-- Player inputs will be added here -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addSetupPlayer('B')"><i class="bi bi-plus"></i> Add Player</button>
+                            </div>
+                        </div>
+                        <hr>
+                        <h5>Timer Settings</h5>
+                        <div class="mb-3">
+                            <label for="timerMode" class="form-label">Timer Mode</label>
+                            <select class="form-select" id="timerMode">
+                                <option value="standard">Standard (90 minutes)</option>
+                                <option value="custom">Custom Duration</option>
+                                <option value="infinite">Infinite</option>
+                            </select>
+                        </div>
+                        <div id="customDurationContainer" class="mb-3 d-none">
+                            <label for="customDuration" class="form-label">Total Match Time (minutes)</label>
+                            <input type="number" class="form-control" id="customDuration" value="30" min="2">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="finalizeSetup()">Start Match</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Player Modal -->
+    <div class="modal fade" id="addPlayerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Player</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addPlayerForm">
+                        <input type="hidden" id="playerTeam">
+                        <div class="mb-3">
+                            <label for="playerName" class="form-label">Player Name</label>
+                            <input type="text" class="form-control" id="playerName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="playerNumber" class="form-label">Jersey Number</label>
+                            <input type="number" class="form-control" id="playerNumber" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="playerPosition" class="form-label">Position</label>
+                            <select class="form-select" id="playerPosition">
+                                <option>Goalkeeper</option>
+                                <option>Defender</option>
+                                <option>Midfielder</option>
+                                <option>Forward</option>
+                            </select>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="isCaptain">
+                            <label class="form-check-label" for="isCaptain">Captain</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="addPlayer()">Add Player</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Team Name Modal -->
+    <div class="modal fade" id="editTeamNameModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Team Name</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editTeamNameForm">
+                        <input type="hidden" id="editTeamId">
+                        <div class="mb-3">
+                            <label for="newTeamName" class="form-label">Team Name</label>
+                            <input type="text" class="form-control" id="newTeamName" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="updateTeamName()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Event Modal -->
+    <div class="modal fade" id="addEventModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Match Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addEventForm">
+                        <div class="mb-3">
+                            <label for="eventType" class="form-label">Event Type</label>
+                            <select class="form-select" id="eventType">
+                                <option value="goal">Goal</option>
+                                <option value="yellow-card">Yellow Card</option>
+                                <option value="red-card">Red Card</option>
+                                <option value="substitution">Substitution</option>
+                                <option value="shot-on-target">Shot on Target</option>
+                                <option value="shot-off-target">Shot off Target</option>
+                                <option value="foul">Foul</option>
+                                <option value="offside">Offside</option>
+                                <option value="corner">Corner</option>
+                                <option value="penalty-missed">Penalty Missed</option>
+                                <option value="save">Goalkeeper Save</option>
+                                <option value="free-kick">Free Kick Awarded</option>
+                                <option value="penalty-kick">Penalty Kick Awarded</option>
+                                <option value="throw-in">Throw-in</option>
+                                <option value="goal-kick">Goal Kick</option>
+                                <option value="var-review">VAR Review</option>
+                                <option value="stoppage-time">Stoppage Time</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eventTeam" class="form-label">Team</label>
+                            <select class="form-select" id="eventTeam">
+                                <option value="A">Team A</option>
+                                <option value="B">Team B</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eventPlayer" class="form-label">Player</label>
+                            <select class="form-select" id="eventPlayer"></select>
+                        </div>
+
+                            <!-- Additional fields for specific events -->
+                            <div id="assistPlayerContainer" class="mb-3 d-none">
+                                <label for="assistPlayer" class="form-label">Assist by</label>
+                                <select class="form-select" id="assistPlayer"></select>
+                            </div>
+
+                            <div id="stoppageTimeContainer" class="mb-3 d-none">
+                                <label for="stoppageTimeValue" class="form-label">Stoppage Time (minutes)</label>
+                                <input type="number" class="form-control" id="stoppageTimeValue" min="1">
+                            </div>
+
+                            <div id="substitutionPlayerContainer" class="mb-3 d-none">
+                                <label for="playerIn" class="form-label">Player In</label>
+                                <select class="form-select" id="playerIn"></select>
+                            </div>
+                        <!-- Additional fields for substitutions etc. can be added here -->
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="addEvent()">Add Event</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Match State
+        const matchState = {
+            isMatchStarted: false,
+            isMatchPaused: false,
+            matchTime: 0, // in seconds
+            accumulatedTime: 0, // total time run before a pause
+            timerStartTime: 0, // timestamp when timer was last started/resumed
+            matchTimerInterval: null,
+            currentHalf: 1,
+            isExtraTime: false,
+            timerMode: 'standard', // standard, custom, infinite
+            halfDuration: 2700, // 45 minutes in seconds for standard
+            teamA: { name: 'Team A', score: 0, formation: '4-4-2', players: [], stats: { shots: 0, shotsOnTarget: 0, fouls: 0, corners: 0, offsides: 0, saves: 0, freeKicks: 0, penalties: 0, throwIns: 0, goalKicks: 0, varReviews: 0, possession: 50 } },
+            teamB: { name: 'Team B', score: 0, formation: '4-3-3', players: [], stats: { shots: 0, shotsOnTarget: 0, fouls: 0, corners: 0, offsides: 0, saves: 0, freeKicks: 0, penalties: 0, throwIns: 0, goalKicks: 0, varReviews: 0, possession: 50 } },
+            events: []
+        };
+
+        // DOM Elements
+        const elements = {
+            setupMatchBtn: document.getElementById('setupMatchBtn'),
+            startBtn: document.getElementById('startBtn'),
+            pauseBtn: document.getElementById('pauseBtn'),
+            endHalfBtn: document.getElementById('endHalfBtn'),
+            addEventBtn: document.getElementById('addEventBtn'),
+            extraTimeBtn: document.getElementById('extraTimeBtn'),
+            endMatchBtn: document.getElementById('endMatchBtn'),
+            timer: document.getElementById('matchTimer'),
+            half: document.getElementById('matchHalf'),
+            teamAName: document.getElementById('teamAName'),
+            teamBName: document.getElementById('teamBName'),
+            teamAScore: document.getElementById('teamAScore'),
+            teamBScore: document.getElementById('teamBScore'),
+            teamALineup: document.getElementById('teamALineup'),
+            teamBLineup: document.getElementById('teamBLineup'),
+            matchEvents: document.getElementById('matchEvents'),
+            matchStats: document.getElementById('matchStats'),
+            teamALineupTitle: document.getElementById('teamALineupTitle'),
+            teamBLineupTitle: document.getElementById('teamBLineupTitle')
+        };
+
+        // Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            elements.startBtn.addEventListener('click', startMatch);
+            elements.pauseBtn.addEventListener('click', togglePause);
+            elements.endHalfBtn.addEventListener('click', endHalf);
+            elements.addEventBtn.addEventListener('click', openAddEventModal);
+            renderAll();
+        });
+
+        // Render Functions
+        function renderAll() {
+            renderScoreboard();
+            renderLineups();
+            renderEvents();
+            renderStats();
+        }
+
+        function renderScoreboard() {
+            elements.teamAScore.textContent = matchState.teamA.score;
+            elements.teamBScore.textContent = matchState.teamB.score;
+            elements.teamAName.textContent = matchState.teamA.name;
+            elements.teamBName.textContent = matchState.teamB.name;
+
+            // Update lineup titles
+            elements.teamALineupTitle.innerHTML = `${matchState.teamA.name} Lineup <button class="btn btn-sm btn-outline-primary float-end" onclick="openAddPlayerModal('A')"><i class="bi bi-plus"></i> Add Player</button>`;
+            elements.teamBLineupTitle.innerHTML = `${matchState.teamB.name} Lineup <button class="btn btn-sm btn-outline-primary float-end" onclick="openAddPlayerModal('B')"><i class="bi bi-plus"></i> Add Player</button>`;
+
+            // Update team names in event modal dropdown
+            const eventTeamSelect = document.getElementById('eventTeam');
+            eventTeamSelect.options[0].textContent = matchState.teamA.name;
+            eventTeamSelect.options[1].textContent = matchState.teamB.name;
+        }
+        function renderLineups() {
+            const renderTeamLineup = (team, element) => {
+                element.innerHTML = '';
+                if (!team.players || team.players.length === 0) {
+                    element.innerHTML = '<p class="text-muted">No players added yet.</p>';
+                    return;
+                }
+                team.players.forEach(player => {
+                    const playerCard = document.createElement('div');
+                    playerCard.className = 'player-card';
+                    playerCard.innerHTML = `
+                        <span class="player-number">${player.number}</span>
+                        <strong>${player.name}</strong>
+                        <span class="player-position">${player.position}</span>
+                        ${player.isCaptain ? '<span class="captain-badge">C</span>' : ''}
+                    `;
+                    element.appendChild(playerCard);
+                });
+            };
+            renderTeamLineup(matchState.teamA, elements.teamALineup);
+            renderTeamLineup(matchState.teamB, elements.teamBLineup);
+        }
+        function renderEvents() {
+            elements.matchEvents.innerHTML = '';
+            if (matchState.events.length === 0) {
+                elements.matchEvents.innerHTML = '<p class="text-muted text-center">No events yet.</p>';
+                return;
+            }
+            matchState.events.forEach(event => {
+                const eventItem = document.createElement('div');
+                eventItem.className = 'event-item';
+                let icon = '';
+                let eventDetails = '';
+
+                switch(event.type) {
+                    case 'goal': 
+                        icon = '<i class="bi bi-futbol"></i>'; 
+                        eventDetails = `Goal by ${event.player}`;
+                        if (event.assistBy) {
+                            eventDetails += ` (Assist: ${event.assistBy})`;
+                        }
+                        break;
+                    case 'yellow-card': 
+                        icon = '<i class="bi bi-file-fill text-warning"></i>'; 
+                        eventDetails = `Yellow Card for ${event.player}`;
+                        break;
+                    case 'red-card': 
+                        icon = '<i class="bi bi-file-fill text-danger"></i>'; 
+                        eventDetails = `Red Card for ${event.player}`;
+                        break;
+                    case 'substitution': 
+                        icon = '<i class="bi bi-arrow-down-up"></i>'; 
+                        eventDetails = `Substitution: ${event.player} <i class="bi bi-arrow-right"></i> ${event.playerIn}`;
+                        break;
+                    case 'shot-on-target':
+                        icon = '<i class="bi bi-bullseye"></i>';
+                        eventDetails = `Shot on target by ${event.player}`;
+                        break;
+                    case 'shot-off-target':
+                        icon = '<i class="bi bi-x-circle"></i>';
+                        eventDetails = `Shot off target by ${event.player}`;
+                        break;
+                    case 'foul':
+                        icon = '<i class="bi bi-exclamation-octagon"></i>';
+                        eventDetails = `Foul by ${event.player}`;
+                        break;
+                    case 'offside':
+                        icon = '<i class="bi bi-flag"></i>';
+                        eventDetails = `Offside, ${event.player}`;
+                        break;
+                    case 'corner':
+                        icon = '<i class="bi bi-flag-fill"></i>';
+                        eventDetails = `Corner for ${event.teamName}`;
+                        break;
+                    case 'penalty-missed':
+                        icon = '<i class="bi bi-x-lg"></i>';
+                        eventDetails = `Penalty missed by ${event.player}`;
+                        break;
+                    case 'save':
+                        icon = '<i class="bi bi-shield-check"></i>';
+                        eventDetails = `Save by ${event.player}`;
+                        break;
+                    case 'free-kick':
+                        icon = '<i class="bi bi-circle-square"></i>';
+                        eventDetails = `Free Kick for ${event.teamName}`;
+                        break;
+                    case 'penalty-kick':
+                        icon = '<i class="bi bi-record-circle"></i>';
+                        eventDetails = `Penalty for ${event.teamName}`;
+                        break;
+                    case 'throw-in':
+                        icon = '<i class="bi bi-arrows-expand"></i>';
+                        eventDetails = `Throw-in for ${event.teamName}`;
+                        break;
+                    case 'goal-kick':
+                        icon = '<i class="bi bi-box-arrow-up"></i>';
+                        eventDetails = `Goal Kick for ${event.teamName}`;
+                        break;
+                    case 'var-review':
+                        icon = '<i class="bi bi-camera-video"></i>';
+                        eventDetails = `VAR Review for ${event.teamName}`;
+                        break;
+                    case 'stoppage-time':
+                        icon = '<i class="bi bi-stopwatch"></i>';
+                        eventDetails = `Stoppage Time: ${event.stoppageTime} minutes`;
+                        break;
+                }
+                eventItem.innerHTML = `
+                    <strong>${event.time}'</strong> ${icon} ${eventDetails} (${event.teamName})
+                `;
+                elements.matchEvents.appendChild(eventItem);
+            });
+        }
+        function renderStats() {
+            const statsContainer = elements.matchStats;
+            const statsToShow = ['possession', 'shots', 'shotsOnTarget', 'fouls', 'corners', 'offsides', 'saves', 'freeKicks', 'penalties', 'throwIns', 'goalKicks', 'varReviews'];
+            const statLabels = { possession: 'Possession %', shots: 'Shots', shotsOnTarget: 'Shots on Target', fouls: 'Fouls', corners: 'Corners', offsides: 'Offsides', saves: 'Saves', freeKicks: 'Free Kicks', penalties: 'Penalties', throwIns: 'Throw-ins', goalKicks: 'Goal Kicks', varReviews: 'VAR Reviews' };
+
+            let tableHtml = '<table class="table table-sm table-striped text-center"><tbody>';
+            statsToShow.forEach(stat => {
+                tableHtml += `
+                    <tr>
+                        <td class="text-start fw-bold">${matchState.teamA.stats[stat]}</td>
+                        <th class="text-center">${statLabels[stat]}</th>
+                        <td class="text-end fw-bold">${matchState.teamB.stats[stat]}</td>
+                    </tr>
+                `;
+            });
+            tableHtml += '</tbody></table>';
+            statsContainer.innerHTML = tableHtml;
+        }
+
+        // Match Controls
+        function startMatch() {
+            if (matchState.isMatchStarted) return;
+            matchState.isMatchStarted = true;
+            matchState.isMatchPaused = false;
+            matchState.timerStartTime = Date.now();
+            elements.startBtn.disabled = true;
+            elements.pauseBtn.disabled = false;
+            elements.endHalfBtn.disabled = false;
+            elements.addEventBtn.disabled = false;
+            runTimer();
+        }
+
+        function togglePause() {
+            matchState.isMatchPaused = !matchState.isMatchPaused;
+
+            if (matchState.isMatchPaused) {
+                // Pausing the timer
+                matchState.accumulatedTime += (Date.now() - matchState.timerStartTime) / 1000;
+                elements.pauseBtn.innerHTML = '<i class="bi bi-play-fill"></i> Resume';
+                elements.pauseBtn.classList.remove('btn-light');
+                elements.pauseBtn.classList.add('btn-success');
+            } else {
+                // Resuming the timer
+                matchState.timerStartTime = Date.now();
+                elements.pauseBtn.innerHTML = '<i class="bi bi-pause-fill"></i> Pause';
+                elements.pauseBtn.classList.remove('btn-success');
+                elements.pauseBtn.classList.add('btn-light');
+            }
+        }
+
+        function endHalf() {
+            matchState.isMatchPaused = true;
+            matchState.accumulatedTime += (Date.now() - matchState.timerStartTime) / 1000;
+            elements.pauseBtn.disabled = true;
+
+            if (matchState.currentHalf === 1) {
+                elements.half.textContent = 'Half Time';
+                elements.endHalfBtn.textContent = 'Start 2nd Half';
+                elements.endHalfBtn.classList.remove('btn-secondary');
+                elements.endHalfBtn.classList.add('btn-primary');
+                elements.endHalfBtn.onclick = startSecondHalf;
+            } else if (matchState.currentHalf === 2) {
+                endMatch();
+            }
+        }
+
+        function startSecondHalf() {
+            matchState.currentHalf = 2;
+            matchState.accumulatedTime = matchState.halfDuration;
+            matchState.timerStartTime = Date.now();
+            matchState.isMatchPaused = false;
+
+            elements.half.textContent = '2nd Half';
+            elements.endHalfBtn.textContent = 'End Match';
+            elements.endHalfBtn.classList.remove('btn-primary');
+            elements.endHalfBtn.classList.add('btn-danger');
+            elements.endHalfBtn.onclick = endHalf;
+            elements.pauseBtn.disabled = false;
+        }
+
+        function endMatch() {
+            clearInterval(matchState.matchTimerInterval);
+            elements.startBtn.disabled = true;
+            elements.pauseBtn.disabled = true;
+            elements.endHalfBtn.disabled = true;
+            elements.addEventBtn.disabled = true;
+            elements.extraTimeBtn.classList.add('d-none');
+            elements.endMatchBtn.disabled = true;
+
+            let winner = 'Draw';
+            if (matchState.teamA.score > matchState.teamB.score) {
+                winner = matchState.teamA.name;
+            } else if (matchState.teamB.score > matchState.teamA.score) {
+                winner = matchState.teamB.name;
+            }
+
+            // Placeholder for penalty shootout logic
+            if (winner === 'Draw' && matchState.isExtraTime) {
+                alert('Match ends in a draw. Penalty shootout needed.');
+            } else {
+                alert(`Match Finished! Winner: ${winner}`);
+            }
+        }
+
+        function runTimer() {
+            if (matchState.matchTimerInterval) clearInterval(matchState.matchTimerInterval);
+            matchState.matchTimerInterval = setInterval(() => {
+                if (matchState.isMatchStarted && !matchState.isMatchPaused) {
+                    const elapsed = (Date.now() - matchState.timerStartTime) / 1000;
+                    matchState.matchTime = Math.floor(matchState.accumulatedTime + elapsed);
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(matchState.matchTime / 60);
+            const seconds = matchState.matchTime % 60;
+            elements.timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // Player & Event Management
+        let addPlayerModal, addEventModal, editTeamNameModal, matchSetupModal;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            addPlayerModal = new bootstrap.Modal(document.getElementById('addPlayerModal'));
+            addEventModal = new bootstrap.Modal(document.getElementById('addEventModal'));
+            editTeamNameModal = new bootstrap.Modal(document.getElementById('editTeamNameModal'));
+            matchSetupModal = new bootstrap.Modal(document.getElementById('matchSetupModal'));
+
+            // Open setup modal automatically and pre-fill players
+            document.getElementById('matchSetupModal').addEventListener('show.bs.modal', () => {
+                // Clear existing player inputs
+                document.getElementById('setupTeamAPlayers').innerHTML = '';
+                document.getElementById('setupTeamBPlayers').innerHTML = '';
+                // Add 11 default player inputs for each team
+                for (let i = 0; i < 11; i++) {
+                    addSetupPlayer('A');
+                    addSetupPlayer('B');
+                }
+            });
+
+            matchSetupModal.show();
+
+            elements.setupMatchBtn.addEventListener('click', () => matchSetupModal.show());
+
+            document.getElementById('timerMode').addEventListener('change', (e) => {
+                const customDurationContainer = document.getElementById('customDurationContainer');
+                if (e.target.value === 'custom') {
+                    customDurationContainer.classList.remove('d-none');
+                } else {
+                    customDurationContainer.classList.add('d-none');
+                }
+            });
+        });
+
+        function openAddPlayerModal(team) {
+            document.getElementById('playerTeam').value = team;
+            document.getElementById('addPlayerForm').reset();
+            addPlayerModal.show();
+        }
+
+        function openEditTeamNameModal(teamId) {
+            document.getElementById('editTeamId').value = teamId;
+            const teamName = (teamId === 'A') ? matchState.teamA.name : matchState.teamB.name;
+            document.getElementById('newTeamName').value = teamName;
+            editTeamNameModal.show();
+        }
+
+        function addSetupPlayer(teamId) {
+            const container = document.getElementById(`setupTeam${teamId}Players`);
+            const playerInput = document.createElement('div');
+            playerInput.className = 'row gx-1 mb-2 player-input-group align-items-center';
+            playerInput.innerHTML = `
+                <div class="col-4">
+                    <input type="text" class="form-control form-control-sm" placeholder="Player Name">
+                </div>
+                <div class="col-2">
+                    <input type="number" class="form-control form-control-sm" placeholder="No.">
+                </div>
+                <div class="col-4">
+                    <input type="text" class="form-control form-control-sm" placeholder="Position">
+                </div>
+                <div class="col-2 text-end">
+                    <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('.player-input-group').remove()"><i class="bi bi-trash"></i></button>
+                </div>
+            `;
+            container.appendChild(playerInput);
+        }
+
+        function finalizeSetup() {
+            const teamAName = document.getElementById('setupTeamAName').value;
+            const teamBName = document.getElementById('setupTeamBName').value;
+
+            if (!teamAName || !teamBName) {
+                alert('Both team names are required.');
+                return;
+            }
+
+            matchState.teamA.name = teamAName;
+            matchState.teamB.name = teamBName;
+
+            // Process players
+            const processPlayers = (teamId) => {
+                const team = (teamId === 'A') ? matchState.teamA : matchState.teamB;
+                team.players = []; // Clear existing players
+                const container = document.getElementById(`setupTeam${teamId}Players`);
+                const playerInputs = container.querySelectorAll('.player-input-group');
+                playerInputs.forEach(inputGroup => {
+                    const name = inputGroup.querySelector('input[placeholder="Player Name"]').value;
+                    const number = inputGroup.querySelector('input[placeholder="No."]').value;
+                    const position = inputGroup.querySelector('input[placeholder="Position"]').value;
+                    if (name && number) {
+                        team.players.push({
+                            name: name,
+                            number: parseInt(number),
+                            position: position || 'N/A',
+                            isCaptain: false // Captain can be assigned later
+                        });
+                    }
+                });
+            };
+
+            processPlayers('A');
+            processPlayers('B');
+
+            // Timer settings
+            const timerMode = document.getElementById('timerMode').value;
+            matchState.timerMode = timerMode;
+            if (timerMode === 'custom') {
+                const customMinutes = document.getElementById('customDuration').value;
+                matchState.halfDuration = (parseInt(customMinutes) / 2) * 60;
+            } else if (timerMode === 'infinite') {
+                matchState.halfDuration = Infinity;
+            } else {
+                matchState.halfDuration = 2700; // Standard 45 mins
+            }
+
+            // Enable match controls
+            elements.startBtn.disabled = false;
+            elements.addEventBtn.disabled = false;
+            elements.endHalfBtn.disabled = false;
+            elements.setupMatchBtn.classList.add('d-none'); // Hide setup button
+
+            renderAll();
+            matchSetupModal.hide();
+        }
+
+        function updateTeamName() {
+            const teamId = document.getElementById('editTeamId').value;
+            const newName = document.getElementById('newTeamName').value;
+            if (!newName) {
+                alert('Team name cannot be empty.');
+                return;
+            }
+            const team = (teamId === 'A') ? matchState.teamA : matchState.teamB;
+            team.name = newName;
+            renderScoreboard();
+            editTeamNameModal.hide();
+        }
+
+        function addPlayer() {
+            const teamId = document.getElementById('playerTeam').value;
+            const name = document.getElementById('playerName').value;
+            const number = document.getElementById('playerNumber').value;
+            const position = document.getElementById('playerPosition').value;
+            const isCaptain = document.getElementById('isCaptain').checked;
+
+            if (!name || !number) {
+                alert('Player name and number are required.');
+                return;
+            }
+
+            const player = { name, number, position, isCaptain, stats: {} };
+            const team = teamId === 'A' ? matchState.teamA : matchState.teamB;
+
+            if (isCaptain) {
+                team.players.forEach(p => { p.isCaptain = false; });
+            }
+
+            team.players.push(player);
+            team.players.sort((a, b) => a.number - b.number);
+
+            renderLineups();
+            addPlayerModal.hide();
+        }
+
+        function openAddEventModal() {
+            const eventTypeSelect = document.getElementById('eventType');
+            const teamSelect = document.getElementById('eventTeam');
+            const playerSelect = document.getElementById('eventPlayer');
+            const assistPlayerSelect = document.getElementById('assistPlayer');
+            const playerInSelect = document.getElementById('playerIn');
+            const stoppageTimeSelect = document.getElementById('stoppageTimeValue');
+
+            const assistContainer = document.getElementById('assistPlayerContainer');
+            const subContainer = document.getElementById('substitutionPlayerContainer');
+            const stoppageTimeContainer = document.getElementById('stoppageTimeContainer');
+
+            const populatePlayers = (selectElement) => {
+                const selectedTeamId = teamSelect.value;
+                const team = (selectedTeamId === 'A') ? matchState.teamA : matchState.teamB;
+                selectElement.innerHTML = '<option value="">Select Player</option>'; // Add a default option
+                team.players.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.name;
+                    option.textContent = `${p.number} - ${p.name}`;
+                    selectElement.appendChild(option);
+                });
+            };
+
+            const toggleEventFields = () => {
+                const eventType = eventTypeSelect.value;
+                assistContainer.classList.toggle('d-none', eventType !== 'goal');
+                subContainer.classList.toggle('d-none', eventType !== 'substitution');
+                stoppageTimeContainer.classList.toggle('d-none', eventType !== 'stoppage-time');
+                
+                if (eventType === 'goal') {
+                    populatePlayers(assistPlayerSelect);
+                } else if (eventType === 'substitution') {
+                    populatePlayers(playerInSelect);
+                }
+            };
+
+            teamSelect.onchange = () => {
+                populatePlayers(playerSelect);
+                toggleEventFields();
+            };
+            eventTypeSelect.onchange = toggleEventFields;
+
+            populatePlayers(playerSelect);
+            toggleEventFields();
+            document.getElementById('addEventForm').reset();
+            addEventModal.show();
+        }
+
+        function addEvent() {
+            const eventType = document.getElementById('eventType').value;
+            const teamId = document.getElementById('eventTeam').value;
+            const playerOutName = document.getElementById('eventPlayer').value;
+            const team = (teamId === 'A') ? matchState.teamA : matchState.teamB;
+
+            if (!playerOutName) {
+                alert('Please select a player.');
+                return;
+            }
+
+            const event = {
+                time: Math.floor(matchState.matchTime / 60),
+                type: eventType,
+                player: playerOutName,
+                teamName: team.name,
+            };
+
+            if (eventType === 'goal') {
+                const assistPlayerName = document.getElementById('assistPlayer').value;
+                if (assistPlayerName) {
+                    event.assistBy = assistPlayerName;
+                }
+                team.score++;
+                team.stats.shots++;
+                team.stats.shotsOnTarget++;
+                renderScoreboard();
+                renderStats();
+            } else if (eventType === 'stoppage-time') {
+                const stoppageMinutes = document.getElementById('stoppageTimeValue').value;
+                if (!stoppageMinutes || stoppageMinutes < 1) {
+                    alert('Please enter a valid stoppage time.');
+                    return;
+                }
+                event.stoppageTime = parseInt(stoppageMinutes);
+                renderEvents();
+            } else if (eventType === 'substitution') {
+            } else if (type === 'substitution') {
+                const playerInName = document.getElementById('playerIn').value;
+                if (!playerInName) {
+                    alert('Please select the player coming in.');
+                    return;
+                }
+                event.playerIn = playerInName;
+            } else {
+                // Handle other stat-based events
+                switch(type) {
+                    case 'shot-on-target':
+                        team.stats.shots++;
+                        team.stats.shotsOnTarget++;
+                        break;
+                    case 'shot-off-target':
+                        team.stats.shots++;
+                        break;
+                    case 'foul':
+                        team.stats.fouls++;
+                        break;
+                    case 'offside':
+                        team.stats.offsides++;
+                        break;
+                    case 'corner':
+                        team.stats.corners++;
+                        break;
+                    case 'penalty-missed':
+                        team.stats.shots++;
+                        break;
+                    case 'save':
+                        team.stats.saves++;
+                        // A save implies a shot on target from the opposing team
+                        const opposingTeam = (teamId === 'A') ? matchState.teamB : matchState.teamA;
+                        opposingTeam.stats.shots++;
+                        opposingTeam.stats.shotsOnTarget++;
+                        break;
+                    case 'free-kick':
+                        team.stats.freeKicks++;
+                        break;
+                    case 'penalty-kick':
+                        team.stats.penalties++;
+                        break;
+                    case 'throw-in':
+                        team.stats.throwIns++;
+                        break;
+                    case 'goal-kick':
+                        team.stats.goalKicks++;
+                        break;
+                    case 'var-review':
+                        team.stats.varReviews++;
+                        break;
+                }
+                renderStats();
+            }
+
+            matchState.events.push(event);
+            matchState.events.sort((a, b) => a.time - b.time);
+
+            renderEvents();
+            addEventModal.hide();
+        }
+
+    </script>
+</body>
+</html>

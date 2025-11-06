@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Players - Playker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .search-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        .results-container {
+            margin-top: 2rem;
+        }
+        .player-card {
+            transition: transform 0.2s;
+            margin-bottom: 1rem;
+        }
+        .player-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .sport-badge {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .email-suggestion {
+            cursor: pointer;
+            padding: 8px 12px;
+        }
+        .email-suggestion:hover {
+            background-color: #f8f9fa;
+        }
+        .clickable-row {
+            cursor: pointer;
+        }
+        .clickable-row:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Playker</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="search-player.html">Find Players</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <div id="userSection" class="text-white me-3">
+                        <span id="userEmail" class="me-2"></span>
+                        <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="search-container">
+            <h2 class="mb-4">Search Players</h2>
+            <form id="searchForm" onsubmit="event.preventDefault(); searchPlayers();">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="searchField" class="form-label">Search By</label>
+                        <select class="form-select" id="searchField">
+                            <option value="email">Email</option>
+                            <option value="name">Name</option>
+                            <option value="age">Age</option>
+                            <option value="city">City</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="searchQuery" class="form-label">Search Term</label>
+                        <input type="text" class="form-control" id="searchQuery" 
+                               placeholder="Enter search term" 
+                               autocomplete="off"
+                               required>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" type="submit">
+                            <i class="fas fa-search me-2"></i>Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="results-container mt-4" id="resultsContainer">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Search Results</h4>
+                <div id="resultCount" class="text-muted"></div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover" id="searchResults">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Age</th>
+                            <th>City</th>
+                            <th>Sports</th>
+                        </tr>
+                    </thead>
+                    <tbody id="searchResultsBody">
+                        <!-- Results will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center py-4" id="loadingIndicator" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Searching for players...</p>
+            </div>
+            <div class="alert alert-info text-center" id="noResults" style="display: none;">
+                <i class="fas fa-info-circle me-2"></i> No players found matching your search criteria.
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let searchTimeout;
+        let currentUser = null;
+
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const userData = localStorage.getItem('user');
+            const userSection = document.getElementById('userSection');
+            
+            if (userData) {
+                try {
+                    currentUser = JSON.parse(userData);
+                    document.getElementById('userEmail').textContent = currentUser.email || 'User';
+                    userSection.classList.remove('d-none');
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                    redirectToLogin();
+                }
+            } else {
+                redirectToLogin();
+            }
+        });
+
+        function redirectToLogin() {
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            redirectToLogin();
+        }
+
+        // Search for players based on selected field and query
+        async function searchPlayers() {
+            const searchField = document.getElementById('searchField').value;
+            const searchTerm = document.getElementById('searchQuery').value.trim();
+            const resultsBody = document.getElementById('searchResultsBody');
+            const noResults = document.getElementById('noResults');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const resultCount = document.getElementById('resultCount');
+            
+            if (!searchTerm) {
+                resultsBody.innerHTML = '';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            resultsBody.innerHTML = '';
+            noResults.style.display = 'none';
+            
+            try {
+                console.log(`Searching for players where ${searchField} contains:`, searchTerm);
+                const apiUrl = `http://localhost:5502/api/player/search?field=${encodeURIComponent(searchField)}&query=${encodeURIComponent(searchTerm)}`;
+                console.log('API URL:', apiUrl);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                    },
+                    credentials: 'include'
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        redirectToLogin();
+                        return;
+                    }
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('API Error:', errorData);
+                    throw new Error(errorData.error || 'Failed to search players');
+                }
+                
+                const players = await response.json();
+                console.log('Found players:', players);
+                
+                // Hide loading indicator
+                loadingIndicator.style.display = 'none';
+                
+                if (!players || players.length === 0) {
+                    noResults.style.display = 'block';
+                    resultCount.textContent = '';
+                    return;
+                }
+                
+                // Update result count
+                resultCount.textContent = `${players.length} player${players.length !== 1 ? 's' : ''} found`;
+                
+                // Populate results
+                players.forEach(player => {
+                    const row = document.createElement('tr');
+                    row.className = 'clickable-row';
+                    row.onclick = () => viewPlayerProfile(player._id || player.userId);
+                    
+                    // Create clickable name cell
+                    const nameCell = document.createElement('td');
+                    const nameLink = document.createElement('a');
+                    nameLink.href = '#';
+                    nameLink.onclick = (e) => {
+                        e.stopPropagation();
+                        viewPlayerProfile(player._id || player.userId);
+                    };
+                    nameLink.textContent = player.name || 'N/A';
+                    nameCell.appendChild(nameLink);
+                    
+                    // Add other cells
+                    const emailCell = document.createElement('td');
+                    emailCell.textContent = player.email || 'N/A';
+                    
+                    const ageCell = document.createElement('td');
+                    ageCell.textContent = player.age || 'N/A';
+                    
+                    const cityCell = document.createElement('td');
+                    cityCell.textContent = player.city || 'N/A';
+                    
+                    const sportsCell = document.createElement('td');
+                    sportsCell.textContent = Array.isArray(player.sports) ? player.sports.join(', ') : 'N/A';
+                    
+                    // Append cells to row
+                    row.appendChild(nameCell);
+                    row.appendChild(emailCell);
+                    row.appendChild(ageCell);
+                    row.appendChild(cityCell);
+                    row.appendChild(sportsCell);
+                    
+                    resultsBody.appendChild(row);
+                });
+                
+            } catch (error) {
+                console.error('Error searching players:', error);
+                loadingIndicator.style.display = 'none';
+                resultsBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            ${error.message || 'Failed to search players. Please try again.'}
+                        </td>
+                    </tr>`;
+            }
+        }
+        
+        // View player profile
+        function viewPlayerProfile(userId) {
+            console.log('Viewing profile for user ID:', userId);
+            // Store the selected player ID in sessionStorage
+            sessionStorage.setItem('selectedPlayerId', userId);
+            // Redirect to the player profile page
+            window.location.href = 'profile-player.html';
+        }
+    </script>
+</body>
+</html>

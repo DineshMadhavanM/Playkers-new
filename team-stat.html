@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Details - Playker</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SweetAlert2 for better alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .team-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .team-logo {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 5px solid #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #0d6efd;
+        }
+        .player-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 1rem;
+        }
+        .player-role {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .captain-badge {
+            font-size: 0.7rem;
+            vertical-align: middle;
+            margin-left: 0.5rem;
+        }
+        .action-buttons {
+            margin-top: 2rem;
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #212529;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading team details...</p>
+        </div>
+
+        <!-- Team Header -->
+        <div id="teamHeader" class="team-header text-center d-none">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <img id="teamLogo" src="" alt="Team Logo" class="team-logo img-fluid mb-3">
+                </div>
+                <div class="col-md-8 text-md-start">
+                    <h1 id="teamName" class="display-4 mb-3"></h1>
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start mb-3">
+                        <span id="sportType" class="badge bg-primary me-2"></span>
+                        <span id="teamCreated" class="text-muted"></span>
+                    </div>
+                    <p id="teamDescription" class="lead"></p>
+                    <div class="action-buttons">
+                        <button id="editTeamBtn" class="btn btn-primary me-2">
+                            <i class="fas fa-edit me-1"></i> Edit Team
+                        </button>
+                        <button id="addMatchBtn" class="btn btn-success me-2">
+                            <i class="fas fa-plus-circle me-1"></i> Add Match
+                        </button>
+                        <button id="invitePlayersBtn" class="btn btn-outline-secondary">
+                            <i class="fas fa-user-plus me-1"></i> Invite Players
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div id="statsOverview" class="row mt-4 d-none">
+            <div class="col-md-3 col-6 mb-4">
+                <div class="stat-card text-center">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-value" id="totalPlayers">0</div>
+                    <div class="stat-label">Players</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="stat-card text-center">
+                    <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+                    <div class="stat-value" id="totalWins">0</div>
+                    <div class="stat-label">Wins</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="stat-card text-center">
+                    <div class="stat-icon"><i class="fas fa-futbol"></i></div>
+                    <div class="stat-value" id="totalGoals">0</div>
+                    <div class="stat-label">Goals</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="stat-card text-center">
+                    <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="stat-value" id="nextMatch">-</div>
+                    <div class="stat-label">Next Match</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Players Section -->
+        <div id="playersSection" class="card mt-4 d-none">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Team Players</h5>
+                <button id="addPlayerBtn" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-plus me-1"></i> Add Player
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Role</th>
+                                <th>Matches</th>
+                                <th>Goals</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="playersList">
+                            <!-- Players will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Matches -->
+        <div id="upcomingMatches" class="card mt-4 d-none">
+            <div class="card-header">
+                <h5 class="mb-0">Upcoming Matches</h5>
+            </div>
+            <div class="card-body">
+                <div id="noUpcomingMatches" class="text-center py-4">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No upcoming matches scheduled</p>
+                    <button id="scheduleMatchBtn" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-1"></i> Schedule a Match
+                    </button>
+                </div>
+                <div id="matchesList" class="d-none">
+                    <!-- Matches will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Axios for HTTP requests -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const teamId = urlParams.get('teamId');
+            
+            if (!teamId) {
+                showError('No team ID provided');
+                return;
+            }
+
+            // Load team details
+            loadTeamDetails(teamId);
+            
+            // Set up event listeners
+            document.getElementById('editTeamBtn').addEventListener('click', () => {
+                window.location.href = `team.html?edit=${teamId}`;
+            });
+
+            document.getElementById('addMatchBtn').addEventListener('click', () => {
+                window.location.href = `create-match.html?teamId=${teamId}`;
+            });
+
+            document.getElementById('invitePlayersBtn').addEventListener('click', () => {
+                // Show invite players modal or redirect
+                window.location.href = `invite-players.html?teamId=${teamId}`;
+            });
+
+            document.getElementById('addPlayerBtn').addEventListener('click', () => {
+                // Show add player modal or redirect
+                window.location.href = `add-player.html?teamId=${teamId}`;
+            });
+
+            document.getElementById('scheduleMatchBtn').addEventListener('click', () => {
+                window.location.href = `create-match.html?teamId=${teamId}`;
+            });
+        });
+
+        async function loadTeamDetails(teamId) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showError('Please log in to view team details');
+                    window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                    return;
+                }
+
+                const response = await axios.get(`/api/teams/${teamId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.data.success && response.data.data) {
+                    displayTeamDetails(response.data.data);
+                } else {
+                    throw new Error('Failed to load team details');
+                }
+            } catch (error) {
+                console.error('Error loading team details:', error);
+                showError(error.response?.data?.message || 'Failed to load team details');
+                
+                // If unauthorized, redirect to login
+                if (error.response?.status === 401) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                }
+            }
+        }
+
+        function displayTeamDetails(team) {
+            // Hide loading spinner
+            document.getElementById('loadingSpinner').classList.add('d-none');
+            
+            // Show main content
+            document.getElementById('teamHeader').classList.remove('d-none');
+            document.getElementById('statsOverview').classList.remove('d-none');
+            document.getElementById('playersSection').classList.remove('d-none');
+            document.getElementById('upcomingMatches').classList.remove('d-none');
+
+            // Set team details
+            document.getElementById('teamName').textContent = team.teamName;
+            document.getElementById('teamDescription').textContent = team.teamDescription || 'No description provided';
+            document.getElementById('sportType').textContent = team.sportType || 'General';
+            
+            // Set team logo
+            const teamLogo = document.getElementById('teamLogo');
+            if (team.teamLogo) {
+                teamLogo.src = team.teamLogo;
+                teamLogo.alt = `${team.teamName} Logo`;
+            } else {
+                // Default team logo
+                teamLogo.src = 'https://via.placeholder.com/150';
+                teamLogo.alt = 'Default Team Logo';
+            }
+
+            // Set creation date
+            if (team.createdAt) {
+                const createdDate = new Date(team.createdAt).toLocaleDateString();
+                document.getElementById('teamCreated').textContent = `Created on ${createdDate}`;
+            }
+
+            // Update player count
+            document.getElementById('totalPlayers').textContent = team.teamPlayers?.length || 0;
+
+            // Display players
+            displayPlayers(team.teamPlayers || []);
+
+            // TODO: Load and display team statistics
+            // loadTeamStatistics(team._id);
+        }
+
+        function displayPlayers(players) {
+            const playersList = document.getElementById('playersList');
+            playersList.innerHTML = '';
+
+            if (!players || players.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="5" class="text-center py-4">
+                        <i class="fas fa-users-slash fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">No players added yet</p>
+                    </td>
+                `;
+                playersList.appendChild(row);
+                return;
+            }
+
+            // Sort players with captain first
+            const sortedPlayers = [...players].sort((a, b) => {
+                if (a.role === 'Captain') return -1;
+                if (b.role === 'Captain') return 1;
+                return 0;
+            });
+
+            // Add each player to the table
+            sortedPlayers.forEach(player => {
+                const row = document.createElement('tr');
+                const isCaptain = player.role === 'Captain';
+                
+                row.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="${player.playerId?.profilePic || 'https://via.placeholder.com/50'}" 
+                                 alt="${player.playerName}" 
+                                 class="player-avatar">
+                            <div>
+                                <div class="fw-medium">
+                                    ${player.playerName}
+                                    ${isCaptain ? '<span class="badge bg-primary captain-badge">Captain</span>' : ''}
+                                </div>
+                                <div class="text-muted small">${player.playerId?.email || ''}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary">${player.role || 'Player'}</span>
+                    </td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" title="View Profile">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" title="Message">
+                            <i class="fas fa-envelope"></i>
+                        </button>
+                    </td>
+                `;
+                playersList.appendChild(row);
+            });
+        }
+
+        function showError(message) {
+            // Hide loading spinner
+            document.getElementById('loadingSpinner').classList.add('d-none');
+            
+            // Show error message using SweetAlert2 if available, otherwise use native alert
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: message,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Redirect to teams list or home page
+                    window.location.href = '/teams.html';
+                });
+            } else {
+                alert(message);
+                window.location.href = '/teams.html';
+            }
+        }
+
+        // Function to format date
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(dateString).toLocaleDateString('en-US', options);
+        }
+    </script>
+</body>
+</html>

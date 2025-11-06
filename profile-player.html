@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Profile - Playker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .profile-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+        }
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .sport-badge {
+            font-size: 0.9rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .section-title {
+            color: #0d6efd;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Playker</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="search-player.html">Find Players</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <div id="userSection" class="text-white me-3">
+                        <span id="userEmail" class="me-2"></span>
+                        <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading player profile...</p>
+        </div>
+
+        <!-- Profile Content (initially hidden) -->
+        <div id="profileContent" style="display: none;">
+            <!-- Profile Header -->
+            <div class="profile-header text-center mb-5">
+                <img src="https://via.placeholder.com/150" alt="Player Photo" class="profile-avatar mb-3" id="playerPhoto">
+                <h2 id="playerName">Loading...</h2>
+                <p class="mb-1" id="playerEmail">Loading...</p>
+                <div id="playerSports" class="mt-2"></div>
+            </div>
+
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-md-4">
+                    <!-- Basic Info Card -->
+                    <div class="stats-card">
+                        <h5 class="section-title">Player Information</h5>
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Age:</strong> <span id="playerAge">-</span></p>
+                            <p class="mb-1"><strong>City:</strong> <span id="playerCity">-</span></p>
+                            <p class="mb-1"><strong>Member Since:</strong> <span id="memberSince">-</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Teams Card -->
+                    <div class="stats-card">
+                        <h5 class="section-title">Teams</h5>
+                        <div id="teamsList">
+                            <p class="text-muted">Loading teams...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-8">
+                    <!-- Statistics Card -->
+                    <div class="stats-card">
+                        <h5 class="section-title">Statistics</h5>
+                        <ul class="nav nav-tabs" id="sportTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="cricket-tab" data-bs-toggle="tab" data-bs-target="#cricket" type="button" role="tab">Cricket</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="football-tab" data-bs-toggle="tab" data-bs-target="#football" type="button" role="tab">Football</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="kabaddi-tab" data-bs-toggle="tab" data-bs-target="#kabaddi" type="button" role="tab">Kabaddi</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content p-3" id="sportTabsContent">
+                            <!-- Cricket Stats -->
+                            <div class="tab-pane fade show active" id="cricket" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-4 text-center">
+                                        <h3 id="cricketMatches">0</h3>
+                                        <p class="text-muted">Matches</p>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <h3 id="cricketRuns">0</h3>
+                                        <p class="text-muted">Runs</p>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <h3 id="cricketWickets">0</h3>
+                                        <p class="text-muted">Wickets</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Football Stats -->
+                            <div class="tab-pane fade" id="football" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-4 text-center">
+                                        <h3 id="footballMatches">0</h3>
+                                        <p class="text-muted">Matches</p>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <h3 id="footballGoals">0</h3>
+                                        <p class="text-muted">Goals</p>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <h3 id="footballAssists">0</h3>
+                                        <p class="text-muted">Assists</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Kabaddi Stats -->
+                            <div class="tab-pane fade" id="kabaddi" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-4 text-center">
+                                        <h3 id="kabaddiMatches">0</h3>
+                                        <p class="text-muted">Matches</p>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <h3 id="kabaddiRaids">0</h3>
+                                        <p class="text-muted">Raids</p>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <h3 id="kabaddiTackles">0</h3>
+                                        <p class="text-muted">Tackles</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Match History -->
+                    <div class="stats-card">
+                        <h5 class="section-title">Recent Matches</h5>
+                        <div id="matchHistory">
+                            <p class="text-muted">Loading match history...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let currentUser = null;
+        let playerData = null;
+
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadPlayerProfile();
+        });
+
+        function checkAuth() {
+            const userData = localStorage.getItem('user');
+            const userSection = document.getElementById('userSection');
+            
+            if (userData) {
+                try {
+                    currentUser = JSON.parse(userData);
+                    document.getElementById('userEmail').textContent = currentUser.email || 'User';
+                    userSection.classList.remove('d-none');
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                    redirectToLogin();
+                }
+            } else {
+                redirectToLogin();
+            }
+        }
+
+        function redirectToLogin() {
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            redirectToLogin();
+        }
+
+        // Load player profile data
+        async function loadPlayerProfile() {
+            try {
+                // Get playerId from URL or sessionStorage
+                const urlParams = new URLSearchParams(window.location.search);
+                let playerId = urlParams.get('id') || sessionStorage.getItem('selectedPlayerId');
+                
+                if (!playerId) {
+                    showError('No player selected');
+                    return;
+                }
+
+                // Fetch player data
+                const response = await fetch(`http://localhost:5502/api/player/${playerId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                    },
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        redirectToLogin();
+                        return;
+                    }
+                    throw new Error('Failed to load player profile');
+                }
+
+                playerData = await response.json();
+                displayPlayerProfile();
+                
+                // Load additional data
+                await Promise.all([
+                    loadPlayerStats(playerId),
+                    loadPlayerTeams(playerId),
+                    loadMatchHistory(playerId)
+                ]);
+
+                // Hide loading, show content
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('profileContent').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error loading player profile:', error);
+                showError(error.message || 'Failed to load player profile');
+            }
+        }
+
+        // Display player profile data
+        function displayPlayerProfile() {
+            if (!playerData) return;
+
+            // Basic Info
+            document.getElementById('playerName').textContent = playerData.name || 'Unknown Player';
+            document.getElementById('playerEmail').textContent = playerData.email || '';
+            document.getElementById('playerAge').textContent = playerData.age || '-';
+            document.getElementById('playerCity').textContent = playerData.city || '-';
+            
+            // Member since
+            if (playerData.createdAt) {
+                const joinDate = new Date(playerData.createdAt).toLocaleDateString();
+                document.getElementById('memberSince').textContent = joinDate;
+            }
+
+            // Sports
+            const sportsContainer = document.getElementById('playerSports');
+            if (playerData.sports && playerData.sports.length > 0) {
+                sportsContainer.innerHTML = playerData.sports.map(sport => 
+                    `<span class="badge bg-primary sport-badge">${sport}</span>`
+                ).join('');
+            } else {
+                sportsContainer.innerHTML = '<span class="text-muted">No sports selected</span>';
+            }
+
+            // Photo (if available)
+            if (playerData.photoUrl) {
+                document.getElementById('playerPhoto').src = playerData.photoUrl;
+            }
+        }
+
+        // Load player statistics
+        async function loadPlayerStats(playerId) {
+            try {
+                const response = await fetch(`http://localhost:5502/api/player/${playerId}/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const stats = await response.json();
+                    updateStatsUI(stats);
+                }
+            } catch (error) {
+                console.error('Error loading player stats:', error);
+            }
+        }
+
+        // Update statistics UI
+        function updateStatsUI(stats) {
+            // Cricket
+            if (stats.cricket) {
+                document.getElementById('cricketMatches').textContent = stats.cricket.matches || 0;
+                document.getElementById('cricketRuns').textContent = stats.cricket.runs || 0;
+                document.getElementById('cricketWickets').textContent = stats.cricket.wickets || 0;
+            }
+
+            // Football
+            if (stats.football) {
+                document.getElementById('footballMatches').textContent = stats.football.matches || 0;
+                document.getElementById('footballGoals').textContent = stats.football.goals || 0;
+                document.getElementById('footballAssists').textContent = stats.football.assists || 0;
+            }
+
+            // Kabaddi
+            if (stats.kabaddi) {
+                document.getElementById('kabaddiMatches').textContent = stats.kabaddi.matches || 0;
+                document.getElementById('kabaddiRaids').textContent = stats.kabaddi.raids || 0;
+                document.getElementById('kabaddiTackles').textContent = stats.kabaddi.tackles || 0;
+            }
+        }
+
+        // Load player's teams
+        async function loadPlayerTeams(playerId) {
+            try {
+                const response = await fetch(`http://localhost:5502/api/player/${playerId}/teams`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                const teamsContainer = document.getElementById('teamsList');
+                
+                if (response.ok) {
+                    const teams = await response.json();
+                    if (teams.length > 0) {
+                        teamsContainer.innerHTML = teams.map(team => `
+                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                                <span>${team.name}</span>
+                                <span class="badge bg-${team.role === 'captain' ? 'primary' : 'secondary'}">
+                                    ${team.role}
+                                </span>
+                            </div>
+                        `).join('');
+                    } else {
+                        teamsContainer.innerHTML = '<p class="text-muted">Not part of any teams yet</p>';
+                    }
+                } else {
+                    teamsContainer.innerHTML = '<p class="text-muted">Failed to load teams</p>';
+                }
+            } catch (error) {
+                console.error('Error loading teams:', error);
+                document.getElementById('teamsList').innerHTML = '<p class="text-danger">Error loading teams</p>';
+            }
+        }
+
+        // Load match history
+        async function loadMatchHistory(playerId) {
+            try {
+                const response = await fetch(`http://localhost:5502/api/player/${playerId}/matches?limit=5`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                const matchHistoryContainer = document.getElementById('matchHistory');
+                
+                if (response.ok) {
+                    const matches = await response.json();
+                    if (matches.length > 0) {
+                        matchHistoryContainer.innerHTML = `
+                            <div class="list-group">
+                                ${matches.map(match => `
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h6 class="mb-1">${match.sport} Match</h6>
+                                                <small class="text-muted">${new Date(match.date).toLocaleDateString()}</small>
+                                            </div>
+                                            <span class="badge bg-${match.result === 'win' ? 'success' : match.result === 'loss' ? 'danger' : 'secondary'}">
+                                                ${match.result || 'N/A'}
+                                            </span>
+                                        </div>
+                                        <div class="mt-2">
+                                            <small>${match.team1} vs ${match.team2}</small>
+                                            <span class="badge bg-info ms-2">${match.playerStats?.points || 0} pts</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    } else {
+                        matchHistoryContainer.innerHTML = '<p class="text-muted">No match history available</p>';
+                    }
+                } else {
+                    matchHistoryContainer.innerHTML = '<p class="text-muted">Failed to load match history</p>';
+                }
+            } catch (error) {
+                console.error('Error loading match history:', error);
+                document.getElementById('matchHistory').innerHTML = '<p class="text-danger">Error loading match history</p>';
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i> ${message}
+                </div>
+                <button class="btn btn-primary mt-3" onclick="window.history.back()">Go Back</button>
+            `;
+        }
+    </script>
+</body>
+</html>

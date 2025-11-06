@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Players - Playker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .search-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        .results-container {
+            margin-top: 2rem;
+        }
+        .player-card {
+            transition: transform 0.2s;
+            margin-bottom: 1rem;
+        }
+        .player-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .sport-badge {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        #emailSuggestions {
+            position: absolute;
+            z-index: 1000;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        .email-suggestion {
+            cursor: pointer;
+        }
+        .email-suggestion:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Playker</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="search-player.html">Find Players</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <div id="userSection" class="text-white me-3">
+                        <span id="userEmail" class="me-2"></span>
+                        <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="search-container">
+            <h2 class="mb-4">Search Players</h2>
+            <div class="row">
+                <div class="col-md-8 position-relative">
+                    <label for="playerSearch" class="form-label">Search by Email</label>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" id="playerSearch" 
+                               placeholder="Start typing player's email" 
+                               autocomplete="off"
+                               oninput="searchUserByEmail()">
+                        <button class="btn btn-primary" type="button" id="searchPlayerBtn" onclick="searchUserByEmail(true)">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                    <div id="emailSuggestions" class="list-group">
+                        <!-- Email suggestions will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-container mt-4" id="resultsContainer">
+            <div id="searchResults">
+                <!-- Results will be populated here -->
+            </div>
+            <div class="alert alert-info" id="noResults" style="display: none;">
+                <i class="fas fa-info-circle me-2"></i> No registered players found matching your search.
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let searchTimeout;
+        let currentUser = null;
+
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const userData = localStorage.getItem('user');
+            const userSection = document.getElementById('userSection');
+            
+            if (userData) {
+                try {
+                    currentUser = JSON.parse(userData);
+                    document.getElementById('userEmail').textContent = currentUser.email || 'User';
+                    userSection.classList.remove('d-none');
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                    redirectToLogin();
+                }
+            } else {
+                redirectToLogin();
+            }
+        });
+
+        function redirectToLogin() {
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            redirectToLogin();
+        }
+
+        // Search for users by email (with debounce)
+        async function searchUserByEmail(forceSearch = false) {
+            const searchInput = document.getElementById('playerSearch');
+            const searchTerm = searchInput.value.trim();
+            const suggestionsContainer = document.getElementById('emailSuggestions');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const noResults = document.getElementById('noResults');
+            const searchResults = document.getElementById('searchResults');
+            
+            // Clear previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            // Hide suggestions if search term is too short
+            if (searchTerm.length < 2) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+            
+            // Show loading state
+            suggestionsContainer.innerHTML = '<div class="list-group-item">Searching...</div>';
+            suggestionsContainer.style.display = 'block';
+            
+            // Debounce the search
+            searchTimeout = setTimeout(async () => {
+                try {
+                    console.log('Searching for users with email:', searchTerm);
+                    const apiUrl = `http://localhost:5502/api/users/search?email=${encodeURIComponent(searchTerm)}`;
+                    console.log('API URL:', apiUrl);
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                        },
+                        credentials: 'include'
+                    });
+                    
+                    console.log('Response status:', response.status);
+                    
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            redirectToLogin();
+                            return;
+                        }
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('API Error:', errorData);
+                        throw new Error(errorData.error || 'Failed to search users');
+                    }
+                    
+                    const users = await response.json();
+                    console.log('Found users:', users);
+                    
+                    // Clear previous suggestions
+                    suggestionsContainer.innerHTML = '';
+                    
+                    if (users.length === 0) {
+                        suggestionsContainer.innerHTML = `
+                            <div class="list-group-item text-muted">
+                                No registered users found with this email.
+                                ${!forceSearch ? 'Keep typing...' : ''}
+                            </div>`;
+                        
+                        if (forceSearch) {
+                            noResults.style.display = 'block';
+                            searchResults.innerHTML = '';
+                        }
+                        return;
+                    }
+                    
+                    // Display suggestions
+                    users.forEach(user => {
+                        const suggestionItem = document.createElement('button');
+                        suggestionItem.type = 'button';
+                        suggestionItem.className = 'list-group-item list-group-item-action email-suggestion';
+                        suggestionItem.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${user.name || 'User'}</strong>
+                                    <div class="text-muted small">${user.email}</div>
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        `;
+                        
+                        suggestionItem.onclick = () => {
+                            displayPlayerDetails(user);
+                            searchInput.value = user.email;
+                            suggestionsContainer.style.display = 'none';
+                        };
+                        
+                        suggestionsContainer.appendChild(suggestionItem);
+                    });
+                    
+                    // If this was a forced search, display the first result
+                    if (forceSearch && users.length > 0) {
+                        displayPlayerDetails(users[0]);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error searching users:', error);
+                    suggestionsContainer.innerHTML = `
+                        <div class="list-group-item text-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Error searching for users. Please try again.
+                        </div>`;
+                }
+            }, forceSearch ? 0 : 300); // No delay for button click, 300ms for typing
+        }
+
+        function displayPlayerDetails(player) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            const searchResults = document.getElementById('searchResults');
+            const noResults = document.getElementById('noResults');
+            
+            if (!player) {
+                noResults.style.display = 'block';
+                searchResults.innerHTML = '';
+                return;
+            }
+            
+            noResults.style.display = 'none';
+            
+            // Format player data
+            const sportsBadges = player.sports && player.sports.length > 0 
+                ? player.sports.map(sport => 
+                    `<span class="badge bg-primary sport-badge">${sport}</span>`
+                  ).join('') 
+                : '<span class="text-muted">No sports listed</span>';
+            
+            // Create player card
+            const playerCard = document.createElement('div');
+            playerCard.className = 'card player-card mb-3';
+            playerCard.innerHTML = `
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 class="card-title">${player.name || 'Player'}</h4>
+                            <p class="card-text mb-2">
+                                <i class="fas fa-envelope me-2"></i> ${player.email || 'N/A'}
+                            </p>
+                            ${player.phone ? `
+                                <p class="card-text mb-2">
+                                    <i class="fas fa-phone me-2"></i> ${player.phone}
+                                </p>
+                            ` : ''}
+                            ${player.city ? `
+                                <p class="card-text mb-2">
+                                    <i class="fas fa-map-marker-alt me-2"></i> ${player.city}
+                                </p>
+                            ` : ''}
+                            <div class="mt-3">
+                                <h6><i class="fas fa-trophy me-2"></i>Sports</h6>
+                                ${sportsBadges}
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-secondary">ID: ${player._id || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            searchResults.innerHTML = '';
+            searchResults.appendChild(playerCard);
+        }
+    </script>
+</body>
+</html>

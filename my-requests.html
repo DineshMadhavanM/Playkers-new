@@ -1,0 +1,49 @@
+<div class="main-content">
+  <h2>Received Play Requests</h2>
+  <div class="messages-list">
+    <!-- Messages will be rendered here by JS -->
+  </div>
+</div>
+
+<script>
+async function fetchMessages() {
+  // You can use receiverId (if you have user login) or receiverName (if not)
+  const receiverName = prompt("Enter your player name to view your requests:");
+  if (!receiverName) return;
+  const res = await fetch(`http://localhost:5000/api/messages?receiverName=${encodeURIComponent(receiverName)}`);
+  const messages = await res.json();
+  renderMessages(messages);
+}
+
+function renderMessages(messages) {
+  const list = document.querySelector('.messages-list');
+  if (!messages.length) {
+    list.innerHTML = '<i>No requests found.</i>';
+    return;
+  }
+  list.innerHTML = messages.map(m => `
+    <div class="player-card">
+      <b>From:</b> ${m.senderName} (${m.phone})<br>
+      <b>Place:</b> ${m.place}<br>
+      <b>Game:</b> ${m.gameType}<br>
+      <b>Date/Time:</b> ${m.date} ${m.time}<br>
+      <b>Status:</b> <span class="status-badge">${m.status}</span><br>
+      <b>Received:</b> ${new Date(m.createdAt).toLocaleString()}<br>
+      <button class="request-btn" onclick="respondToRequest('${m._id}', 'ready')">Ready</button>
+      <button class="request-btn" onclick="respondToRequest('${m._id}', 'not ready')">Not Ready</button>
+    </div>
+  `).join('');
+}
+
+async function respondToRequest(id, status) {
+  await fetch(`http://localhost:5000/api/messages/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  alert('Response sent!');
+  fetchMessages();
+}
+
+document.addEventListener('DOMContentLoaded', fetchMessages);
+</script>

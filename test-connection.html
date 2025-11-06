@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #1a237e;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: #ffb300;
+            color: #1a237e;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+        .success {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
+        }
+        .error {
+            background: #ffebee;
+            border: 1px solid #f44336;
+            color: #c62828;
+        }
+        .info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Server Connection Test</h1>
+        <p>This page helps you test if the server is accessible from your browser.</p>
+        
+        <div class="info">
+            <strong>Server Status:</strong> Running on port 5500<br>
+            <strong>Expected URLs:</strong> http://localhost:5502
+        </div>
+        
+        <h3>Test Server Endpoints:</h3>
+        
+        <button class="test-button" onclick="testHomePage()">Test Home Page</button>
+        <button class="test-button" onclick="testAdminPanel()">Test Admin Panel</button>
+        <button class="test-button" onclick="testAPI()">Test API</button>
+        <button class="test-button" onclick="testAll()">Test All</button>
+        
+        <div id="results"></div>
+        
+        <h3>Manual Test Links:</h3>
+        <p><a href="http://localhost:5502/" target="_blank">Home Page</a></p>
+        <p><a href="http://localhost:5502/admin-panel" target="_blank">Admin Panel</a></p>
+        <p><a href="http://localhost:5502/login" target="_blank">Login Page</a></p>
+        <p><a href="http://localhost:5502/signup" target="_blank">Signup Page</a></p>
+        
+        <div class="info">
+            <strong>Troubleshooting Tips:</strong>
+            <ul>
+                <li>Make sure the server is running (npm start)</li>
+                <li>Try opening links in a new tab</li>
+                <li>Clear browser cache (Ctrl+Shift+R)</li>
+                <li>Try incognito/private mode</li>
+                <li>Check if firewall is blocking the connection</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            results.appendChild(div);
+        }
+        
+        async function testEndpoint(url, name) {
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    addResult(`✅ ${name}: SUCCESS (Status: ${response.status})`, 'success');
+                    return true;
+                } else {
+                    addResult(`❌ ${name}: FAILED (Status: ${response.status})`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addResult(`❌ ${name}: ERROR - ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testHomePage() {
+            await testEndpoint('http://localhost:5502/', 'Home Page');
+        }
+        
+        async function testAdminPanel() {
+            await testEndpoint('http://localhost:5502/admin-panel', 'Admin Panel');
+        }
+        
+        async function testAPI() {
+            await testEndpoint('http://localhost:5502/api/users', 'API Users');
+        }
+        
+        async function testAll() {
+            addResult('🔄 Starting comprehensive test...', 'info');
+            const results = await Promise.all([
+                testHomePage(),
+                testAdminPanel(),
+                testAPI()
+            ]);
+            
+            const successCount = results.filter(r => r).length;
+            addResult(`📊 Test Complete: ${successCount}/3 endpoints working`, 
+                     successCount === 3 ? 'success' : 'error');
+        }
+        
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            addResult('🚀 Page loaded. Click buttons above to test server connection.', 'info');
+        });
+    </script>
+</body>
+</html> 

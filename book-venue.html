@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Venue - PLAYKERS BOOKING</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .book-venue-container {
+            max-width: 420px;
+            margin: 60px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(26,35,126,0.10);
+            padding: 40px 32px 32px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .book-venue-container h2 {
+            margin-bottom: 32px;
+            color: #1a237e;
+            font-size: 2em;
+            font-weight: 700;
+        }
+        .venue-options {
+            display: flex;
+            gap: 32px;
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        .venue-option {
+            flex: 1 1 120px;
+            background: #f8f5f5;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(26,35,126,0.08);
+            padding: 32px 0;
+            text-align: center;
+            color: #1a237e;
+            font-size: 1.2em;
+            font-weight: 700;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border 0.2s, background 0.2s, color 0.2s;
+        }
+        .venue-option:hover {
+            border: 2px solid #290b93;
+            background: #fffde7;
+            color: #ffb300;
+        }
+        @media (max-width: 500px) {
+            .book-venue-container {
+                padding: 24px 8px 16px 8px;
+            }
+            .venue-options {
+                flex-direction: column;
+                gap: 18px;
+            }
+        }
+    </style>
+</head>
+<body style="background: #ececf2 !important; min-height: 100vh;">
+    <div class="venue-hero">
+        <h1>Welcome to Playkers Booking</h1>
+        <p>Your one-stop solution for sports management and e-commerce.</p>
+    </div>
+    <div class="book-venue-sections">
+        <a href="game-list.html" class="card-link" style="text-decoration:none;">
+            <div class="book-box turf-box">
+                <div class="book-icon">
+                    <!-- Turf Icon -->
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><rect x="3" y="16" width="18" height="5" rx="2" fill="#43a047"/><rect x="7" y="3" width="2" height="13" rx="1" fill="#388e3c"/><rect x="15" y="6" width="2" height="10" rx="1" fill="#388e3c"/></svg>
+                </div>
+                <h2><a href="turf-list.html">Book Turf</a></h2>
+                <p>Reserve high-quality turf for football, cricket, and more. Enjoy premium facilities and easy booking.</p>
+            </div>
+        </a>
+        <a href="game-list1.html" class="card-link" style="text-decoration:none;">
+            <div class="book-box ground-box">
+                <div class="book-icon">
+                    <!-- Ground Icon -->
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><rect x="3" y="16" width="18" height="5" rx="2" fill="#ffb300"/><circle cx="12" cy="10" r="4" fill="#fbc02d"/><rect x="10" y="6" width="4" height="8" rx="2" fill="#fbc02d"/></svg>
+                </div>
+                <h2><a href="ground-list.html">Book Ground</a></h2>
+                <p>Book open grounds for kabaddi, volleyball, tennis, and more. Spacious, well-maintained, and ready for your game.</p>
+            </div>
+        </a>
+        <div class="book-box academy-box">
+            <div class="book-icon">
+                <!-- Academy Icon -->
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><rect x="2" y="10" width="20" height="8" rx="2" fill="#1976d2"/><rect x="6" y="6" width="12" height="4" rx="2" fill="#64b5f6"/><rect x="10" y="2" width="4" height="4" rx="2" fill="#1976d2"/></svg>
+            </div>
+            <h2><a href="academy.html">Academy</a></h2>
+            <p>Join our sports academy for professional coaching and skill development in various sports.</p>
+            <button class="book-btn">Join Academy</button>
+        </div>
+        <div class="book-box videos-box">
+            <div class="book-icon">
+                <!-- Learning Videos Icon -->
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ff7043"/><polygon points="10,8 16,12 10,16" fill="#fff"/></svg>
+            </div>
+            <h2><a href="videos.html">Learning Videos</a></h2>
+            <p>Access a curated library of learning videos to improve your game and knowledge.</p>
+            <button class="book-btn">Watch Videos</button>
+        </div>
+    </div>
+</body>
+</html>
+<style>
+body {
+    background: #ececf2 !important;
+    min-height: 100vh;
+}
+.venue-hero {
+    width: 100%;
+    background: linear-gradient(100deg, #1a237e 60%, #3949ab 100%);
+    color: #fff;
+    text-align: center;
+    padding: 60px 20px 40px 20px;
+    border-radius: 0 0 32px 32px;
+    box-shadow: 0 4px 24px rgba(26,35,126,0.10);
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+}
+.venue-hero h1 {
+    font-size: 2.5em;
+    font-weight: 800;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 8px rgba(26,35,126,0.10);
+}
+.venue-hero p {
+    font-size: 1.2em;
+    font-weight: 500;
+    margin-bottom: 0;
+    color: #fffde7;
+    text-shadow: 0 1px 4px rgba(26,35,126,0.10);
+}
+.book-venue-sections {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 0 auto 40px auto;
+    max-width: 1200px;
+    padding: 0 16px;
+    flex-wrap: wrap;
+}
+.book-box {
+    background: #ecedf1;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(26,35,126,0.10);
+    padding: 36px 28px 32px 28px;
+    flex: 1 1 320px;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 24px;
+}
+.book-box:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(26,35,126,0.16);
+}
+.book-icon {
+    margin-bottom: 18px;
+}
+.turf-box .book-icon svg rect:first-child {
+    filter: drop-shadow(0 0 8px #43a04755);
+}
+.ground-box .book-icon svg rect:first-child {
+    filter: drop-shadow(0 0 8px #ffb30055);
+}
+.academy-box .book-icon svg rect:first-child {
+    filter: drop-shadow(0 0 8px #1976d255);
+}
+.videos-box .book-icon svg circle {
+    filter: drop-shadow(0 0 8px #ff704355);
+}
+.book-box h2 {
+    color: #0a080e;
+    font-size: 1.5em;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+.book-box p {
+    color: #0a0a07;
+    font-size: 1em;
+    font-weight: 400;
+    margin-bottom: 24px;
+}
+.book-btn {
+    background: linear-gradient(90deg, #ffb300 0%, #ffb300 100%);
+    color: #f0f0f6;
+    border: none;
+    padding: 12px 36px;
+    border-radius: 30px;
+    font-size: 1.1em;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(26,35,126,0.10);
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.book-btn:hover {
+    background: #fff;
+    color: #e1e2ef;
+    box-shadow: 0 6px 24px rgba(26,35,126,0.18);
+}
+.card-link:hover .book-box,
+.card-link:focus .book-box {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(26,35,126,0.16);
+}
+@media (max-width: 1200px) {
+    .book-venue-sections {
+        flex-direction: column;
+        gap: 28px;
+        align-items: center;
+    }
+    .book-box {
+        max-width: 95vw;
+    }
+}
+@media (max-width: 500px) {
+    .venue-hero {
+        padding: 36px 8px 20px 8px;
+        border-radius: 0 0 18px 18px;
+    }
+    .venue-hero h1 {
+        font-size: 1.3em;
+    }
+    .venue-hero p {
+        font-size: 1em;
+    }
+    .book-box {
+        padding: 20px 8px 16px 8px;
+    }
+}
+</style> 

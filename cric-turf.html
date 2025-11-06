@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Turf Booking</title>
+    <style>
+        body {
+            background: #ececf2;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+        .searchbar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 0 0 0;
+            background: #ececf2;
+        }
+        .searchbar input[type="text"] {
+            padding: 10px 16px;
+            border: 1.5px solid #1a237e;
+            border-radius: 8px 0 0 8px;
+            font-size: 1em;
+            outline: none;
+            width: 220px;
+        }
+        .searchbar button {
+            padding: 10px 20px;
+            border: none;
+            background: #1a237e;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.2s;
+        }
+        .searchbar button:hover {
+            background: #3949ab;
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(100deg, #1a237e 60%, #3949ab 100%);
+            color: #fff;
+            padding: 0 32px;
+            height: 64px;
+            box-shadow: 0 2px 8px rgba(26,35,126,0.08);
+        }
+        nav h1 {
+            font-size: 1.6em;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 18px;
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li {
+            font-size: 1em;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .ground1 {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            justify-content: center;
+            align-items: flex-start;
+            margin: 40px auto 0 auto;
+            max-width: 900px;
+            padding: 0 16px;
+        }
+        .box4 {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(26,35,126,0.10);
+            padding: 32px 24px 24px 24px;
+            flex: 1 1 220px;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .box4:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 8px 32px rgba(26,35,126,0.16);
+        }
+        .box4 h2 {
+            color: #1a237e;
+            font-size: 1.2em;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        .box4 img {
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(26,35,126,0.10);
+        }
+        .box4 a {
+            display: inline-block;
+            margin: 6px 0;
+            color: #3949ab;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 6px;
+            padding: 6px 18px;
+            background: #ececf2;
+            transition: background 0.2s, color 0.2s;
+        }
+        .box4 a:hover {
+            background: #1a237e;
+            color: #fff;
+        }
+        @media (max-width: 900px) {
+            .ground1 {
+                flex-direction: column;
+                gap: 28px;
+                align-items: center;
+            }
+            .box4 {
+                max-width: 95vw;
+            }
+        }
+        @media (max-width: 500px) {
+            nav {
+                flex-direction: column;
+                height: auto;
+                padding: 8px 8px;
+            }
+            nav h1 {
+                font-size: 1.1em;
+            }
+            .ground1 {
+                padding: 0 4px;
+            }
+            .box4 {
+                padding: 16px 4px 12px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+  <div class="searchbar">
+    <input type="text" id="search" placeholder="Search">
+    <button id="searchBtn">Search</button>
+  </div>
+  <br>
+  <nav>
+    <h1>COIMBATORE</h1>
+    <ul>
+      <li>24 HRS |</li>
+      <li>PARKING |</li>
+      <li>Contact |</li>
+    </ul>
+  </nav>
+  <div class="ground1">
+    <div class="box4">
+      <h2>SRK MIRAJ Turf(COIMBATORE)</h2>
+      <div class="book-icon">
+        <!-- Ground Icon -->
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><rect x="3" y="16" width="18" height="5" rx="2" fill="#ffb300"/><circle cx="12" cy="10" r="4" fill="#fbc02d"/><rect x="10" y="6" width="4" height="8" rx="2" fill="#fbc02d"/></svg>
+    </div>
+      <a href="https://www.google.com/maps/place/SRK+Miraj+Turf,+Coimbatore./@11.0026831,77.060091,17z">LOCATIONS</a><br>
+      <a href="regis.html">BOOKING</a>
+    </div>
+    <div class="box4">
+        <h2>Nilgiri Football / Cricket Turf / Football Academy(COIMBATORE)</h2>
+        <div class="book-icon">
+            <!-- Ground Icon -->
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><rect x="3" y="16" width="18" height="5" rx="2" fill="#ffb300"/><circle cx="12" cy="10" r="4" fill="#fbc02d"/><rect x="10" y="6" width="4" height="8" rx="2" fill="#fbc02d"/></svg>
+        </div>
+     
+      
+      <a href="https://www.google.com/maps/place/Greenfield+Cricket+Turf/@11.010000,77.065000,17z">LOCATIONS</a><br>
+      <a href="regis.html">BOOKING</a>
+    </div>
+  </div>
+</body>
+</html>

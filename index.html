@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLAYKERS BOOKING</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+            <ul class="nav no-search">
+                <li><a href="#home">Home</a></li>
+                <li><a href="book-venue.html">Book Venue</a></li>
+                <li><a href="match-management.html">Create Match</a></li>
+                <li><a href="ecommerce.html">Products</a></li>
+                <li><a href="profile.html" id="profile-link" style="display: none;">Profile</a></li>
+                <li><a href="test-admin.html">Admin</a></li>
+                <li><a href="login.html" id="login-link">Login</a></li>
+                <li><a href="#" id="logout-link" style="display: none;">Logout</a></li>
+                <li><a href="#about us">About us</a></li>
+            </ul>
+        </nav>
+    </header>
+    <section id="hero" style="background-image: url('hero-background.jpg');">
+        <h1>Welcome to Playkers Booking</h1>
+        <p>Your one-stop solution for sports management and e-commerce.</p>
+    </section>
+    <section id="features">
+        <div class="feature">
+            <div class="feature-accent"></div>
+            <div class="feature-icon"> <!-- Venue Booking Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#ffb300"/><path d="M7 17V7h10v10H7z" stroke="#1a237e" stroke-width="2"/></svg>
+            </div>
+            <h2><a href="book-venue.html">Venue Booking</a></h2>
+            <p>Book your favorite sports venues easily.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-accent"></div>
+            <div class="feature-icon"> <!-- Match Management Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#ffb300"/><path d="M8 16l4-8 4 8" stroke="#1a237e" stroke-width="2"/></svg>
+            </div>
+            <h2><a href="match-management.html">Match Management</a></h2>
+            <p>Create and manage matches effortlessly.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-accent"></div>
+            <div class="feature-icon"> <!-- E-commerce Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#ffb300"/><path d="M8 12h8M8 16h8M8 8h8" stroke="#1a237e" stroke-width="2"/></svg>
+            </div>
+            <h2><a href="ecommerce.html">E-commerce</a></h2>
+            <p>Shop sports products by category.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-accent"></div>
+            <div class="feature-icon"> <!-- User Profile Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#ffb300"/><circle cx="12" cy="10" r="3" stroke="#1a237e" stroke-width="2"/><path d="M7 18c0-2.21 2.686-4 6-4s6 1.79 6 4" stroke="#1a237e" stroke-width="2"/></svg>
+            </div>
+            <h2>User Profile</h2>
+            <p>Track your bookings, orders, and stats.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-accent"></div>
+            <div class="feature-icon"> <!-- Admin Panel Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#ffb300"/><rect x="8" y="8" width="8" height="8" stroke="#1a237e" stroke-width="2"/></svg>
+            </div>
+            <h2>Admin Panel</h2>
+            <p>Manage all data with ease.</p>
+        </div>
+    </section>
+    <footer>
+        <p>&copy; 2023 Your Company. All rights reserved.</p>
+    </footer>
+    <script src="script.js"></script>
+    <script>
+        // Check login status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            const loginLink = document.getElementById('login-link');
+            const logoutLink = document.getElementById('logout-link');
+            const profileLink = document.getElementById('profile-link');
+            
+            if (isLoggedIn && user.name) {
+                // User is logged in
+                loginLink.style.display = 'none';
+                logoutLink.style.display = 'inline';
+                profileLink.style.display = 'inline';
+                
+                // Update welcome message
+                const heroTitle = document.querySelector('#hero h1');
+                if (heroTitle) {
+                    heroTitle.textContent = `Welcome back, ${user.name}!`;
+                }
+            } else {
+                // User is not logged in
+                loginLink.style.display = 'inline';
+                logoutLink.style.display = 'none';
+                profileLink.style.display = 'none';
+            }
+            
+            // Handle logout
+            logoutLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('user');
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userId');
+                window.location.reload();
+            });
+        });
+    </script>
+</body>
+</html> 

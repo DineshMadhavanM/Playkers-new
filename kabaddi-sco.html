@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kabaddi Scorecard Tracker</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1e40af;
+            --secondary-color: #1e3a8a;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --light-bg: #f3f4f6;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+        }
+        .scoreboard {
+            background: linear-gradient(135deg, #1e40af, #1e3a8a);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .team-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .score {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+        .timer {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 20px;
+        }
+        .btn-raid {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        .btn-warning {
+            background-color: var(--warning-color);
+            border-color: var(--warning-color);
+            color: #1f2937;
+        }
+        .raid-log {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .player-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        @media (max-width: 768px) {
+            .score {
+                font-size: 2rem;
+            }
+            .team-name {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Match Setup Modal -->
+        <div class="modal fade" id="matchSetupModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">Match Setup - Step 1 of 2: Team Information</h5>
+                    </div>
+                    <div class="modal-body">
+                        <form id="matchSetupForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="teamAName" class="form-label">Team A Name</label>
+                                        <input type="text" class="form-control" id="teamAName" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="teamBName" class="form-label">Team B Name</label>
+                                        <input type="text" class="form-control" id="teamBName" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Toss Winner</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="tossWinner" id="tossTeamA" value="A" required>
+                                            <label class="form-check-label" for="tossTeamA">
+                                                Team A
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="tossWinner" id="tossTeamB" value="B" required>
+                                            <label class="form-check-label" for="tossTeamB">
+                                                Team B
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Toss Decision</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="tossDecision" id="raidFirst" value="raid" required>
+                                            <label class="form-check-label" for="raidFirst">
+                                                Raid First
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="tossDecision" id="defendFirst" value="defend" required>
+                                            <label class="form-check-label" for="defendFirst">
+                                                Defend First
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-4">
+                                <div></div>
+                                <button type="button" class="btn btn-primary" id="nextToPlayersBtn">Next: Add Players</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Setup Modal -->
+        <div class="modal fade" id="playerSetupModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">Match Setup - Step 2 of 2: Player Information</h5>
+                    </div>
+                    <div class="modal-body">
+                        <form id="playerSetupForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 id="teamANamePlayers">Team A Players</h5>
+                                    <div id="teamAPlayersContainer">
+                                        <!-- Team A players will be added here -->
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="addTeamAPlayer">
+                                        <i class="bi bi-plus"></i> Add Player
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 id="teamBNamePlayers">Team B Players</h5>
+                                    <div id="teamBPlayersContainer">
+                                        <!-- Team B players will be added here -->
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="addTeamBPlayer">
+                                        <i class="bi bi-plus"></i> Add Player
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="alert alert-info mt-3">
+                                <i class="bi bi-info-circle"></i> Add players to each team. You can add up to 12 players per team.
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="backToTeamsBtn">Back to Teams</button>
+                        <button type="button" class="btn btn-primary" id="startMatchBtn">Start Match</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Scoreboard -->
+        <div class="row mb-4 d-none" id="scoreboard">
+            <div class="col-12">
+                <div class="scoreboard p-3 mb-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center">
+                            <div class="team-name" id="teamANameDisplay">Team A</div>
+                            <div class="score" id="teamAScore">0</div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="timer mb-2">
+                                <div id="matchTimer">20:00</div>
+                                <div class="small">1st Half</div>
+                            </div>
+                            <div>
+                                <button class="btn btn-light btn-sm me-2" id="pauseBtn">
+                                    <i class="bi bi-pause-fill"></i> Pause
+                                </button>
+                                <button class="btn btn-light btn-sm" id="endHalfBtn">
+                                    <i class="bi bi-flag-fill"></i> End Half
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="team-name" id="teamBNameDisplay">Team B</div>
+                            <div class="score" id="teamBScore">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Raid Controls -->
+        <div class="row mb-4 d-none" id="raidControls">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Raid Controls</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-2">
+                                <select class="form-select" id="raiderSelect">
+                                    <option value="">Select Raider</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <select class="form-select" id="defenderSelect">
+                                    <option value="">Select Defender (if applicable)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <h6>Successful Raid Points:</h6>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <button class="btn btn-success btn-raid" data-points="0">0 Point</button>
+                                <button class="btn btn-success btn-raid" data-points="1">1 Point</button>
+                                <button class="btn btn-success btn-raid" data-points="2">2 Points</button>
+                                <button class="btn btn-success btn-raid" data-points="3">3 Points</button>
+                                <button class="btn btn-success btn-raid" data-points="4">4 Points</button>
+                                <button class="btn btn-success btn-raid" data-points="5">5 Points</button>
+                                <button class="btn btn-success btn-raid" data-points="6">6 Points</button>
+                                <button class="btn btn-success btn-raid" data-points="7">7 Points</button>
+                            </div>
+
+                            <h6>Bonus Raid Points:</h6>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <button class="btn btn-warning btn-raid" data-points="1.5">1+1 Points</button>
+                                <button class="btn btn-warning btn-raid" data-points="2.5">2+1 Points</button>
+                                <button class="btn btn-warning btn-raid" data-points="3.5">3+1 Points</button>
+                                <button class="btn btn-warning btn-raid" data-points="4.5">4+1 Points</button>
+                                <button class="btn btn-warning btn-raid" data-points="5.5">5+1 Points</button>
+                                <button class="btn btn-warning btn-raid" data-points="6.5">6+1 Points</button>
+                                <button class="btn btn-warning btn-raid" data-points="7.5">7+1 Points</button>
+                            </div>
+
+                            <h6>All Out Points:</h6>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <button class="btn btn-danger btn-allout" data-points="3">3 Points</button>
+                                <button class="btn btn-danger btn-allout" data-points="4">4 Points</button>
+                                <button class="btn btn-danger btn-allout" data-points="5">5 Points</button>
+                                <button class="btn btn-danger btn-allout" data-points="6">6 Points</button>
+                                <button class="btn btn-danger btn-allout" data-points="7">7 Points</button>
+                                <button class="btn btn-danger btn-allout" data-points="8">8 Points</button>
+                                <button class="btn btn-danger btn-allout" data-points="9">9 Points</button>
+                                <button class="btn btn-danger btn-allout" data-points="10">10 Points</button>
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn btn-danger btn-raid" data-points="-1">
+                                    <i class="bi bi-shield-fill-check"></i> Tackle Point (1)
+                                </button>
+                                <button class="btn btn-danger btn-raid" data-points="-2">
+                                    <i class="bi bi-shield-fill-check"></i> Super Tackle (2)
+                                </button>
+                                <button class="btn btn-secondary" id="undoBtn" disabled>
+                                    <i class="bi bi-arrow-counterclockwise"></i> Undo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Raid Log -->
+        <div class="row mb-4 d-none" id="raidLogSection">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Raid Log</h5>
+                        <div>
+                            <button class="btn btn-sm btn-light me-2" id="exportPdfBtn">
+                                <i class="bi bi-file-earmark-pdf"></i> PDF
+                            </button>
+                            <button class="btn btn-sm btn-light" id="exportCsvBtn">
+                                <i class="bi bi-file-earmark-spreadsheet"></i> CSV
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Raider</th>
+                                        <th>Action</th>
+                                        <th>Points</th>
+                                        <th>Team A</th>
+                                        <th>Team B</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="raidLogBody">
+                                    <!-- Raid log entries will be added here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Stats -->
+        <div class="row d-none" id="playerStats">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0" id="teamAPlayersHeader">Team A Players</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Player</th>
+                                        <th class="text-center">Raid Pts</th>
+                                        <th>Raid Stats</th>
+                                        <th>Bonus/Super</th>
+                                        <th class="text-center">Tackle Pts</th>
+                                        <th>Tackle Stats</th>
+                                        <th>Super Tkls</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teamAPlayersBody">
+                                    <!-- Team A players will be added here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0" id="teamBPlayersHeader">Team B Players</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Player</th>
+                                        <th class="text-center">Raid Pts</th>
+                                        <th>Raid Stats</th>
+                                        <th>Bonus/Super</th>
+                                        <th class="text-center">Tackle Pts</th>
+                                        <th>Tackle Stats</th>
+                                        <th>Super Tkls</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teamBPlayersBody">
+                                    <!-- Team B players will be added here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Team Summary -->
+<div class="row d-none" id="teamSummary">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Raid Controls</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-2">
+                        <select class="form-select" id="raiderSelect">
+                            <option value="">Select Raider</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <select class="form-select" id="defenderSelect">
+                            <option value="">Select Defender (if applicable)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <h6>Successful Raid Points:</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button class="btn btn-success btn-raid" data-points="0">0 Point</button>
+                        <button class="btn btn-success btn-raid" data-points="1">1 Point</button>
+                        <button class="btn btn-success btn-raid" data-points="2">2 Points</button>
+                        <button class="btn btn-success btn-raid" data-points="3">3 Points</button>
+                        <button class="btn btn-success btn-raid" data-points="4">4 Points</button>
+                        <button class="btn btn-success btn-raid" data-points="5">5 Points</button>
+                        <button class="btn btn-success btn-raid" data-points="6">6 Points</button>
+                        <button class="btn btn-success btn-raid" data-points="7">7 Points</button>
+                    </div>
+                    <h6 class="mt-3">Bonus Raid Points:</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button class="btn btn-warning btn-raid" data-points="1.5">1+1 Point</button>
+                        <button class="btn btn-warning btn-raid" data-points="2.5">2+1 Points</button>
+                        <button class="btn btn-warning btn-raid" data-points="3.5">3+1 Points</button>
+                    </div>
+                    <h6>All Out Points:</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button class="btn btn-danger btn-allout" data-points="3">3 Points</button>
+                        <button class="btn btn-danger btn-allout" data-points="4">4 Points</button>
+                        <button class="btn btn-danger btn-allout" data-points="5">5 Points</button>
+                        <button class="btn btn-danger btn-allout" data-points="6">6 Points</button>
+                        <button class="btn btn-danger btn-allout" data-points="7">7 Points</button>
+                    </div>
+                    <h6>Tackle:</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button class="btn btn-primary btn-tackle" data-points="1">Tackle (1 Point)</button>
+                        <button class="btn btn-info text-white btn-tackle" data-points="2">Super Tackle (2 Points)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    // Match state
+    const matchState = {
+        teamA: {
+            name: '',
+            score: 0,
+            raidPoints: 0,
+            tacklePoints: 0,
+            allOuts: 0,
+            players: [],
+            // Add more team stats as needed
+            totalRaids: 0,
+            successfulRaids: 0,
+            bonusPoints: 0,
+            emptyRaids: 0,
+            superRaids: 0,
+            totalTackles: 0,
+            successfulTackles: 0,
+            superTackles: 0
+        },
+        teamB: {
+            name: '',
+            score: 0,
+            raidPoints: 0,
+            tacklePoints: 0,
+            allOuts: 0,
+            players: [],
+            // Add more team stats as needed
+            totalRaids: 0,
+            successfulRaids: 0,
+            bonusPoints: 0,
+            emptyRaids: 0,
+            superRaids: 0,
+            totalTackles: 0,
+            successfulTackles: 0,
+            superTackles: 0
+        },
+        currentRaid: null,
+        isPaused: false,
+        matchTime: 0,
+        timerInterval: null,
+        raidLog: [],
+        matchId: ''
+    };
+
+    // DOM Elements
+    const elements = {
+            matchSetupModal: new bootstrap.Modal(document.getElementById('matchSetupModal')),
+            scoreboard: document.getElementById('scoreboard'),
+            raidControls: document.getElementById('raidControls'),
+            raidLogSection: document.getElementById('raidLogSection'),
+            playerStats: document.getElementById('playerStats'),
+            teamANameDisplay: document.getElementById('teamANameDisplay'),
+            teamBNameDisplay: document.getElementById('teamBNameDisplay'),
+            teamAScore: document.getElementById('teamAScore'),
+            teamBScore: document.getElementById('teamBScore'),
+            matchTimer: document.getElementById('matchTimer'),
+            raiderSelect: document.getElementById('raiderSelect'),
+            defenderSelect: document.getElementById('defenderSelect'),
+            raidLogBody: document.getElementById('raidLogBody'),
+            teamAPlayersBody: document.getElementById('teamAPlayersBody'),
+            teamBPlayersBody: document.getElementById('teamBPlayersBody'),
+            pauseBtn: document.getElementById('pauseBtn'),
+            endHalfBtn: document.getElementById('endHalfBtn'),
+            undoBtn: document.getElementById('undoBtn'),
+            allOutBtn: document.getElementById('allOutBtn'),
+            exportPdfBtn: document.getElementById('exportPdfBtn'),
+            exportCsvBtn: document.getElementById('exportCsvBtn')
+        };
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            // Show match setup modal on page load
+            elements.matchSetupModal.show();
+
+            // Add event listeners
+            document.getElementById('nextToPlayersBtn').addEventListener('click', showPlayerSetup);
+            document.getElementById('backToTeamsBtn').addEventListener('click', showTeamSetup);
+            document.getElementById('startMatchBtn').addEventListener('click', startMatch);
+            document.getElementById('addTeamAPlayer').addEventListener('click', () => addPlayerInput('A'));
+            document.getElementById('addTeamBPlayer').addEventListener('click', () => addPlayerInput('B'));
+            
+            // Add event listeners for raid points and all-out buttons
+            document.querySelectorAll('.btn-raid').forEach(btn => {
+                btn.addEventListener('click', handleRaidAction);
+            });
+            
+            document.querySelectorAll('.btn-allout').forEach(btn => {
+                btn.addEventListener('click', handleAllOut);
+            });
+            
+            elements.pauseBtn.addEventListener('click', togglePause);
+            elements.endHalfBtn.addEventListener('click', endHalf);
+            elements.undoBtn.addEventListener('click', undoLastAction);
+            elements.exportPdfBtn?.addEventListener('click', exportToPdf);
+            elements.exportCsvBtn?.addEventListener('click', exportToCsv);
+
+            // Initialize with 1 player per team by default
+            addPlayerInput('A');
+            addPlayerInput('B');
+        });
+
+        // Show player setup modal
+        function showPlayerSetup() {
+            const teamAName = document.getElementById('teamAName').value.trim();
+            const teamBName = document.getElementById('teamBName').value.trim();
+            
+            if (!teamAName || !teamBName) {
+                alert('Please enter both team names');
+                return;
+            }
+            
+            // Update team names in player setup
+            document.getElementById('teamANamePlayers').textContent = `${teamAName} Players`;
+            document.getElementById('teamBNamePlayers').textContent = `${teamBName} Players`;
+            
+            // Show player setup modal
+            elements.matchSetupModal.hide();
+            const playerModal = new bootstrap.Modal(document.getElementById('playerSetupModal'));
+            playerModal.show();
+        }
+        
+        // Show team setup modal
+        function showTeamSetup() {
+            document.getElementById('playerSetupModal').classList.remove('show', 'd-block');
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            elements.matchSetupModal.show();
+        }
+        
+        // Add player input field
+        function addPlayerInput(team) {
+            const container = document.getElementById(`team${team}PlayersContainer`);
+            const playerCount = container.querySelectorAll('.player-input').length;
+            
+            if (playerCount >= 12) {
+                alert('Maximum 12 players per team allowed');
+                return;
+            }
+            
+            const playerDiv = document.createElement('div');
+            playerDiv.className = 'input-group mb-2 player-input';
+            playerDiv.innerHTML = `
+                <input type="text" class="form-control" placeholder="Player ${playerCount + 1} Name" required>
+                <button type="button" class="btn btn-outline-danger remove-player" data-team="${team}">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+            container.appendChild(playerDiv);
+            
+            // Add event listener to remove button
+            playerDiv.querySelector('.remove-player').addEventListener('click', function() {
+                playerDiv.remove();
+            });
+        }
+        
+        // Get players from input fields
+        function getPlayersFromInput(team) {
+            const container = document.getElementById(`team${team}PlayersContainer`);
+            const inputs = container.querySelectorAll('input');
+            const players = [];
+            
+            inputs.forEach((input, index) => {
+                const name = input.value.trim() || `${team === 'A' ? matchState.teamA.name : matchState.teamB.name} Player ${index + 1}`;
+                players.push({
+                    id: `${team}${index + 1}`,
+                    name: name,
+                    raids: 0,
+                    successfulRaids: 0,
+                    raidPoints: 0,
+                    tackles: 0,
+                    successfulTackles: 0,
+                    tacklePoints: 0,
+                    isOnField: true
+                });
+            });
+            
+            return players;
+        }
+
+        // Start the match
+        function startMatch() {
+            const teamAName = document.getElementById('teamAName').value.trim();
+            const teamBName = document.getElementById('teamBName').value.trim();
+            const tossWinner = document.querySelector('input[name="tossWinner"]:checked').value;
+            const tossDecision = document.querySelector('input[name="tossDecision"]:checked').value;
+
+            if (!teamAName || !teamBName) {
+                alert('Please enter both team names');
+                return;
+            }
+
+            // Get players from input fields
+            const teamAPlayers = getPlayersFromInput('A');
+            const teamBPlayers = getPlayersFromInput('B');
+            
+            if (teamAPlayers.length === 0 || teamBPlayers.length === 0) {
+                alert('Each team must have at least 1 player');
+                return;
+            }
+
+            // Initialize match state with proper player stats
+            matchState.teamA = {
+                name: teamAName,
+                score: 0,
+                players: teamAPlayers.map((player, index) => ({
+                    id: player.id || `A${index + 1}`,
+                    name: player.name || `Team A Player ${index + 1}`,
+                    raids: 0,
+                    successfulRaids: 0,
+                    raidPoints: 0,
+                    tackles: 0,
+                    successfulTackles: 0,
+                    tacklePoints: 0,
+                    allOuts: 0,
+                    isOnField: true
+                })),
+                raidPoints: 0,
+                tacklePoints: 0,
+                allOuts: 0
+            };
+            
+            matchState.teamB = {
+                name: teamBName,
+                score: 0,
+                players: teamBPlayers.map((player, index) => ({
+                    id: player.id || `B${index + 1}`,
+                    name: player.name || `Team B Player ${index + 1}`,
+                    raids: 0,
+                    successfulRaids: 0,
+                    raidPoints: 0,
+                    tackles: 0,
+                    successfulTackles: 0,
+                    tacklePoints: 0,
+                    allOuts: 0,
+                    isOnField: true
+                })),
+                raidPoints: 0,
+                tacklePoints: 0,
+                allOuts: 0
+            };
+            
+            matchState.raidingTeam = tossWinner;
+            matchState.matchId = `MATCH-${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+            matchState.matchTime = 20 * 60; // Reset match time
+            matchState.isFirstHalf = true;
+            matchState.isMatchPaused = false;
+            matchState.raidLog = [];
+
+            // Update UI elements
+            elements.teamANameDisplay.textContent = matchState.teamA.name;
+            elements.teamBNameDisplay.textContent = matchState.teamB.name;
+            elements.teamAScore.textContent = matchState.teamA.score;
+            elements.teamBScore.textContent = matchState.teamB.score;
+            
+            // Update player dropdowns
+            updatePlayerDropdowns();
+            
+            // Update player stats
+            updatePlayerStats();
+            
+            // Hide modals and show game UI
+            const playerModal = bootstrap.Modal.getInstance(document.getElementById('playerSetupModal'));
+            if (playerModal) playerModal.hide();
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            
+            elements.scoreboard.classList.remove('d-none');
+            elements.raidControls.classList.remove('d-none');
+            elements.raidLogSection.classList.remove('d-none');
+            elements.playerStats.classList.remove('d-none');
+
+            // Start the match timer
+            clearInterval(timerInterval);
+            startMatchTimer();
+            
+            // Enable/disable buttons
+            elements.undoBtn.disabled = true;
+
+            // Save match state
+            saveMatchState();
+        }
+
+        // Generate player list (kept for backward compatibility)
+        function generatePlayerList(teamName, count) {
+            return Array.from({ length: count }, (_, i) => ({
+                id: `${teamName.substring(0, 3).toUpperCase()}${i + 1}`,
+                name: `${teamName} Player ${i + 1}`,
+                raids: 0,
+                successfulRaids: 0,
+                raidPoints: 0,
+                tackles: 0,
+                successfulTackles: 0,
+                tacklePoints: 0,
+                isOnField: true
+            }));
+        }
+
+        // Update UI elements
+        function updateUI() {
+            // Update scoreboard
+            elements.teamANameDisplay.textContent = matchState.teamA.name;
+            elements.teamBNameDisplay.textContent = matchState.teamB.name;
+            elements.teamAScore.textContent = matchState.teamA.score;
+            elements.teamBScore.textContent = matchState.teamB.score;
+            
+            // Update half scores
+            document.getElementById('teamAFirstHalfScore').textContent = matchState.teamA.firstHalfScore;
+            document.getElementById('teamASecondHalfScore').textContent = matchState.teamA.secondHalfScore;
+            document.getElementById('teamBFirstHalfScore').textContent = matchState.teamB.firstHalfScore;
+            document.getElementById('teamBSecondHalfScore').textContent = matchState.teamB.secondHalfScore;
+            
+            // Update half indicator
+            document.getElementById('matchHalf').textContent = matchState.isFirstHalf ? '1st Half' : '2nd Half';
+
+            // Update player dropdowns
+            updatePlayerDropdowns();
+
+            // Update raid log
+            updateRaidLog();
+
+            // Update player stats
+            updatePlayerStats();
+        }
+
+        // Update player dropdowns to show all players in both dropdowns
+        function updatePlayerDropdowns() {
+            const raiderSelect = elements.raiderSelect;
+            const defenderSelect = elements.defenderSelect;
+
+            // Clear existing options
+            raiderSelect.innerHTML = '<option value="">Select Raider</option>';
+            defenderSelect.innerHTML = '<option value="">Select Defender (if applicable)</option>';
+
+            // Get both teams' players
+            const teamA = matchState.teamA;
+            const teamB = matchState.teamB;
+
+            // Function to add players to dropdown
+            const addPlayersToDropdown = (players, team, dropdown) => {
+                if (players && players.length > 0) {
+                    players.forEach(player => {
+                        if (player.isOnField === false) return;
+                        const option = document.createElement('option');
+                        option.value = player.id || player.name;
+                        option.textContent = `${player.name} (${team.name})`; // Show team name next to player
+                        option.dataset.team = team === teamA ? 'A' : 'B';
+                        dropdown.appendChild(option);
+                    });
+                }
+            };
+
+            // Add all players to both dropdowns
+            addPlayersToDropdown(teamA.players, teamA, raiderSelect);
+            addPlayersToDropdown(teamB.players, teamB, raiderSelect);
+            addPlayersToDropdown(teamA.players, teamA, defenderSelect);
+            addPlayersToDropdown(teamB.players, teamB, defenderSelect);
+            
+            // Reset selections
+            raiderSelect.value = '';
+            defenderSelect.value = '';
+        }
+
+        // Handle raid action
+        function handleRaidAction(e) {
+            const points = parseFloat(e.target.dataset.points);
+            const raiderId = elements.raiderSelect.value;
+            const defenderId = elements.defenderSelect.value;
+            const isBonus = points % 1 !== 0;
+            const raidPoints = Math.floor(points);
+            const isSuperRaid = raidPoints >= 3;
+            const isEmptyRaid = raidPoints === 0 && !isBonus;
+
+            if (!raiderId) {
+                alert('Please select a raider');
+                return;
+            }
+
+            // Find raider and defender
+            const raidingTeam = matchState.raidingTeam === 'A' ? matchState.teamA : matchState.teamB;
+            const defendingTeam = matchState.raidingTeam === 'A' ? matchState.teamB : matchState.teamA;
+            
+            // Find raider in both teams since we now show all players in both dropdowns
+            let raider = raidingTeam.players.find(p => p.id === raiderId) || 
+                        defendingTeam.players.find(p => p.id === raiderId);
+            
+            if (!raider) {
+                alert('Selected raider not found in any team');
+                return;
+            }
+            
+            // Find defender in both teams if defender is selected
+            let defender = null;
+            if (defenderId) {
+                defender = raidingTeam.players.find(p => p.id === defenderId) || 
+                          defendingTeam.players.find(p => p.id === defenderId);
+                
+                if (!defender) {
+                    alert('Selected defender not found in any team');
+                    return;
+                }
+            }
+
+            // Update raider stats
+            raider.raids++;
+            
+            // Determine which team the raider belongs to
+            const raiderTeam = matchState.teamA.players.some(p => p.id === raider.id) ? matchState.teamA : matchState.teamB;
+            const defenderTeam = raiderTeam === matchState.teamA ? matchState.teamB : matchState.teamA;
+            
+            // Update team raid statistics
+            raiderTeam.totalRaids++;
+            
+            if (points > 0) {
+                const raidPoints = Math.floor(points);
+                const bonusPoints = isBonus ? 1 : 0;
+                
+                // Successful raid - points go to raider's team
+                raider.successfulRaids++;
+                raider.raidPoints += raidPoints;
+                raider.bonusPoints += bonusPoints;
+                
+                // Initialize raidPointsHistory if it doesn't exist
+                if (!raider.raidPointsHistory) {
+                    raider.raidPointsHistory = [];
+                }
+                raider.raidPointsHistory.push({ points: raidPoints, isSuper: isSuperRaid, hasBonus: isBonus });
+                
+                // Update team scores
+                const totalPoints = raidPoints + bonusPoints;
+                raiderTeam.raidPoints += raidPoints;
+                raiderTeam.bonusPoints += bonusPoints;
+                raiderTeam.score += totalPoints;
+                
+                // Track Super Raid
+                if (isSuperRaid) {
+                    raider.superRaids++;
+                    raiderTeam.superRaids++;
+                }
+                
+                // Update half score
+                if (matchState.isFirstHalf) {
+                    raiderTeam.firstHalfScore += totalPoints;
+                } else {
+                    raiderTeam.secondHalfScore += totalPoints;
+                }
+                
+                // Log the raid
+                const raidType = isSuperRaid ? 'Super Raid' : 'Raid';
+                logRaid(raider, defender, raidType, raidPoints + bonusPoints);
+                
+                // Update UI immediately
+                updateUI();
+                updatePlayerStats();
+                updateTeamSummary(raiderTeam);
+                updateTeamSummary(defenderTeam);
+            } else if (isEmptyRaid) {
+                // Empty raid
+                raider.emptyRaids++;
+                raiderTeam.emptyRaids++;
+                logRaid(raider, null, 'Empty Raid', 0);
+            }
+            else if (points < 0 && defender) {
+                // Handle tackle points
+                const isSuperTackle = points === -2;
+                const tacklePoints = isSuperTackle ? 2 : 1;
+                
+                // Update defender stats
+                defender.tackles++;
+                defender.successfulTackles++;
+                defender.tacklePoints += tacklePoints;
+                
+                if (isSuperTackle) {
+                    defender.superTackles++;
+                    defenderTeam.superTackles++;
+                }
+                
+                // Update team scores for tackle
+                defenderTeam.tacklePoints += tacklePoints;
+                defenderTeam.score += tacklePoints;
+                
+                // Update half score for tackle
+                if (matchState.isFirstHalf) {
+                    defenderTeam.firstHalfScore += tacklePoints;
+                } else {
+                    defenderTeam.secondHalfScore += tacklePoints;
+                }
+                
+                // Log the tackle
+                const tackleType = isSuperTackle ? 'Super Tackle' : 'Tackle';
+                logRaid(raider, defender, tackleType, tacklePoints);
+            } else if (points === 0.5) {
+                // Bonus point - points go to raider's team
+                raider.raidPoints += 0.5;
+                raiderTeam.raidPoints += 0.5;
+                raiderTeam.score += 0.5;
+                
+                // Update half score for bonus
+                if (matchState.isFirstHalf) {
+                    raiderTeam.firstHalfScore += 0.5;
+                } else {
+                    raiderTeam.secondHalfScore += 0.5;
+                }
+                
+                // Log the bonus
+                logRaid(raider, null, 'Bonus', 0.5);
+            }
+
+            // Switch raiding team
+            matchState.raidingTeam = matchState.raidingTeam === 'A' ? 'B' : 'A';
+            
+            // Update UI and save state
+            updateUI();
+            saveMatchState();
+        }
+
+        // Handle all out
+        function handleAllOut(e) {
+            const points = parseFloat(e.target.dataset.points);
+            const defendingTeam = matchState.raidingTeam === 'A' ? matchState.teamB : matchState.teamA;
+            const raidingTeam = matchState.raidingTeam === 'A' ? matchState.teamA : matchState.teamB;
+            
+            // Add points to raiding team
+            raidingTeam.score += points;
+            raidingTeam.allOuts++;
+            
+            // Update half score
+            if (matchState.isFirstHalf) {
+                raidingTeam.firstHalfScore += points;
+            } else {
+                raidingTeam.secondHalfScore += points;
+            }
+            
+            // Log the all out
+            logRaid(null, null, 'All Out', points);
+            
+            // Switch raiding team
+            matchState.raidingTeam = matchState.raidingTeam === 'A' ? 'B' : 'A';
+            
+            // Update UI and save state
+            updateUI();
+            saveMatchState();
+        }
+
+        // Log raid action
+        function logRaid(raider, defender, action, points) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            let displayPoints = points;
+            let displayAction = action;
+            let raidDetails = '';
+            
+            // Handle different raid types and format display
+            if (action === 'Super Raid') {
+                const raidPoints = Math.floor(points);
+                const bonusPoints = points % 1 !== 0 ? 1 : 0;
+                displayPoints = bonusPoints > 0 ? `${raidPoints}+${bonusPoints}` : raidPoints;
+                raidDetails = `Super Raid (${displayPoints} pts)`;
+            } else if (action === 'Raid') {
+                const raidPoints = Math.floor(points);
+                const bonusPoints = points % 1 !== 0 ? 1 : 0;
+                displayPoints = bonusPoints > 0 ? `${raidPoints}+${bonusPoints}` : raidPoints;
+                raidDetails = `Raid (${displayPoints} pts)`;
+            } else if (action === 'Empty Raid') {
+                displayPoints = '0';
+                raidDetails = 'Empty Raid';
+            } else if (action === 'Tackle') {
+                displayPoints = '1';
+                raidDetails = 'Tackle';
+            } else if (action === 'Super Tackle') {
+                displayPoints = '2';
+                raidDetails = 'Super Tackle';
+            } else if (action === 'All Out') {
+                displayPoints = points;
+                raidDetails = `All Out (${points} pts)`;
+            }
+            
+            let logEntry = {
+                time: timeString,
+                action: action,
+                displayAction: displayAction,
+                points: points,
+                displayPoints: displayPoints,
+                raidDetails: raidDetails,
+                raider: raider ? { 
+                    id: raider.id, 
+                    name: raider.name,
+                    team: raider.team,
+                    raidPoints: raider.raidPoints,
+                    bonusPoints: raider.bonusPoints,
+                    emptyRaids: raider.emptyRaids,
+                    superRaids: raider.superRaids
+                } : null,
+                defender: defender ? { 
+                    id: defender.id, 
+                    name: defender.name,
+                    successfulTackles: defender.successfulTackles,
+                    superTackles: defender.superTackles,
+                    tacklePoints: defender.tacklePoints
+                } : null,
+                timestamp: now.getTime(),
+                isSuperRaid: action === 'Super Raid',
+                isSuperTackle: action === 'Super Tackle',
+                hasBonus: points % 1 !== 0
+            };
+            
+            matchState.raidLog.push(logEntry);
+            updateRaidLog();
+            
+            // Enable undo button
+            elements.undoBtn.disabled = false;
+        }
+
+        // Update raid log display
+        function updateRaidLog() {
+            const logContainer = document.getElementById('raidLog');
+            if (!logContainer) return;
+            
+            logContainer.innerHTML = '';
+            
+            // Show most recent entries first
+            const recentLogs = [...matchState.raidLog].reverse().slice(0, 10);
+            
+            recentLogs.forEach(entry => {
+                const logItem = document.createElement('div');
+                logItem.className = 'list-group-item d-flex justify-content-between align-items-start';
+                
+                let actionText = '';
+                let detailsText = '';
+                let badgeClass = 'bg-primary';
+                
+                // Format action text based on raid/tackle type
+                if (entry.action === 'Raid' || entry.action === 'Super Raid') {
+                    const raidPoints = Math.floor(entry.points);
+                    const bonusText = entry.hasBonus ? ` + ${entry.raider.bonusPoints} bonus` : '';
+                    actionText = `${entry.raider.name} scored ${raidPoints} raid point${raidPoints !== 1 ? 's' : ''}${bonusText}`;
+                    
+                    if (entry.isSuperRaid) {
+                        badgeClass = 'bg-success text-white';
+                        detailsText = `Super Raid (${raidPoints} pts) • Total: ${entry.raider.raidPoints} raid points`;
+                    } else if (entry.hasBonus) {
+                        badgeClass = 'bg-warning text-dark';
+                        detailsText = `Raid with Bonus (${raidPoints}+1) • Total: ${entry.raider.raidPoints} raid points, ${entry.raider.bonusPoints} bonus`;
+                    } else {
+                        detailsText = `Raid • Total: ${entry.raider.raidPoints} raid points`;
+                    }
+                } 
+                else if (entry.action === 'Empty Raid') {
+                    actionText = `${entry.raider.name} - Empty Raid`;
+                    badgeClass = 'bg-secondary';
+                    detailsText = `No points • Empty raids: ${entry.raider.emptyRaids}`;
+                }
+                else if (entry.action === 'Tackle' || entry.action === 'Super Tackle') {
+                    const points = entry.isSuperTackle ? 2 : 1;
+                    actionText = `${entry.defender.name} tackled ${entry.raider.name}`;
+                    
+                    if (entry.isSuperTackle) {
+                        badgeClass = 'bg-danger text-white';
+                        detailsText = `Super Tackle (2 pts) • Total: ${entry.defender.tacklePoints} tackle points`;
+                    } else {
+                        badgeClass = 'bg-info text-dark';
+                        detailsText = `Tackle (1 pt) • Total: ${entry.defender.tacklePoints} tackle points`;
+                    }
+                }
+                
+                logItem.innerHTML = `
+                    <div class="w-100 d-flex justify-content-between">
+                        <div>
+                            <div class="fw-bold">${actionText}</div>
+                            <small class="text-muted">${entry.time} • ${detailsText}</small>
+                        </div>
+                        <span class="badge ${badgeClass} rounded-pill">
+                            ${entry.points > 0 ? '+' : ''}${entry.displayPoints}
+                        </span>
+                    </div>
+                `;
+                
+                logContainer.appendChild(logItem);
+            });
+        }
+
+        // Update player stats
+        function updatePlayerStats() {
+            updateTeamPlayerStats(matchState.teamA, elements.teamAPlayersBody);
+            updateTeamPlayerStats(matchState.teamB, elements.teamBPlayersBody);
+        }
+
+        // Update team summary
+        function updateTeamSummary(team) {
+            const summaryElement = document.getElementById(`team${team.id}Summary`);
+            if (!summaryElement) return;
+            
+            // Calculate team statistics
+            const totalRaids = team.players.reduce((sum, player) => sum + (player.raids || 0), 0);
+            const successfulRaids = team.players.reduce((sum, player) => sum + (player.successfulRaids || 0), 0);
+            const raidSuccessRate = totalRaids > 0 ? Math.round((successfulRaids / totalRaids) * 100) : 0;
+            
+            const totalTackles = team.players.reduce((sum, player) => sum + (player.tackles || 0), 0);
+            const successfulTackles = team.players.reduce((sum, player) => sum + (player.successfulTackles || 0), 0);
+            const tackleSuccessRate = totalTackles > 0 ? Math.round((successfulTackles / totalTackles) * 100) : 0;
+            
+            const superRaids = team.players.reduce((sum, player) => sum + (player.superRaids || 0), 0);
+            const superTackles = team.players.reduce((sum, player) => sum + (player.superTackles || 0), 0);
+            const bonusPoints = team.players.reduce((sum, player) => sum + (player.bonusPoints || 0), 0);
+            
+            // Update the summary element
+            summaryElement.innerHTML = `
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">${team.name} Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Raiding</h6>
+                                <ul class="list-unstyled">
+                                    <li>Total Raids: ${totalRaids}</li>
+                                    <li>Successful Raids: ${successfulRaids} (${raidSuccessRate}%)</li>
+                                    <li>Super Raids: ${superRaids}</li>
+                                    <li>Bonus Points: ${bonusPoints}</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Defending</h6>
+                                <ul class="list-unstyled">
+                                    <li>Total Tackles: ${totalTackles}</li>
+                                    <li>Successful Tackles: ${successfulTackles} (${tackleSuccessRate}%)</li>
+                                    <li>Super Tackles: ${superTackles}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update team player stats
+        function updateTeamPlayerStats(team, container) {
+            if (!container) {
+                console.error('Container element not found');
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            // Make sure players array exists and is an array
+            if (!team.players || !Array.isArray(team.players)) {
+                console.error('Invalid players array for team:', team);
+                return;
+            }
+            
+            team.players.forEach(player => {
+                // Ensure player has required properties with default values
+                player.raids = player.raids || 0;
+                player.successfulRaids = player.successfulRaids || 0;
+                player.emptyRaids = player.emptyRaids || 0;
+                player.raidPoints = player.raidPoints || 0;
+                player.bonusPoints = player.bonusPoints || 0;
+                player.superRaids = player.superRaids || 0;
+                player.tackles = player.tackles || 0;
+                player.successfulTackles = player.successfulTackles || 0;
+                player.unsuccessfulTackles = player.unsuccessfulTackles || 0;
+                player.tacklePoints = player.tacklePoints || 0;
+                player.superTackles = player.superTackles || 0;
+                player.raidPointsHistory = player.raidPointsHistory || [];
+                
+                // Calculate raid stats
+                const raidSuccessRate = player.raids > 0 ? Math.round((player.successfulRaids / player.raids) * 100) : 0;
+                const tackleSuccessRate = player.tackles > 0 ? Math.round((player.successfulTackles / player.tackles) * 100) : 0;
+                
+                // Create table row
+                const row = document.createElement('tr');
+                
+                // Add styling for players not on field
+                if (player.isOnField === false) {
+                    row.classList.add('table-secondary');
+                }
+                
+                // Set row content
+                row.innerHTML = `
+                    <td>${player.name}${player.id ? ` (${player.id})` : ''}</td>
+                    <td class="text-center">${player.raids}</td>
+                    <td class="text-center">${player.successfulRaids} (${raidSuccessRate}%)</td>
+                    <td class="text-center">${player.emptyRaids}</td>
+                    <td class="text-center fw-bold">${player.raidPoints}</td>
+                    <td class="text-center">${player.bonusPoints > 0 ? `+${player.bonusPoints}` : '0'}</td>
+                    <td class="text-center">${player.superRaids}</td>
+                    <td class="text-center">${player.tackles}</td>
+                    <td class="text-center">${player.successfulTackles} (${tackleSuccessRate}%)</td>
+                    <td class="text-center fw-bold">${player.tacklePoints}</td>
+                    <td class="text-center">${player.superTackles}</td>
+                `;
+                
+                container.appendChild(row);
+            });
+            
+            // Also update the team summary
+            updateTeamSummary(team);
+        }
+
+        // Start match timer
+        function startMatchTimer() {
+            // This would be implemented with setInterval in a real app
+            // For simplicity, we're just showing the current time
+            updateTimerDisplay();
+        }
+
+        // Update timer display
+        function updateTimerDisplay() {
+            const minutes = Math.floor(matchState.matchTime / 60);
+            const seconds = matchState.matchTime % 60;
+            elements.matchTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Toggle pause
+        function togglePause() {
+            matchState.isMatchPaused = !matchState.isMatchPaused;
+            
+            if (matchState.isMatchPaused) {
+                elements.pauseBtn.innerHTML = '<i class="bi bi-play-fill"></i> Resume';
+                elements.pauseBtn.classList.remove('btn-light');
+                elements.pauseBtn.classList.add('btn-success');
+            } else {
+                elements.pauseBtn.innerHTML = '<i class="bi bi-pause-fill"></i> Pause';
+                elements.pauseBtn.classList.remove('btn-success');
+                elements.pauseBtn.classList.add('btn-light');
+            }
+        }
+
+        // Show match result
+        function showMatchResult() {
+            const teamAScore = matchState.teamA.score;
+            const teamBScore = matchState.teamB.score;
+            
+            let resultMessage = '';
+            
+            if (teamAScore > teamBScore) {
+                resultMessage = `${matchState.teamA.name} wins the match!`;
+            } else if (teamBScore > teamAScore) {
+                resultMessage = `${matchState.teamB.name} wins the match!`;
+            } else {
+                resultMessage = 'The match ended in a tie!';
+            }
+            
+            // Add score details
+            resultMessage += `\n\nFinal Score:\n${matchState.teamA.name}: ${teamAScore}\n${matchState.teamB.name}: ${teamBScore}`;
+            
+            // Show the result in an alert
+            alert(resultMessage);
+            
+            // You could also update the UI to show the result more prominently
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'match-result alert alert-success text-center mt-3';
+            resultDiv.style.fontSize = '1.5rem';
+            resultDiv.style.fontWeight = 'bold';
+            resultDiv.textContent = resultMessage.replace(/\n/g, ' '); // Replace newlines with spaces for the div
+            
+            // Insert after the scoreboard
+            const scoreboard = document.querySelector('.scoreboard');
+            if (scoreboard) {
+                scoreboard.parentNode.insertBefore(resultDiv, scoreboard.nextSibling);
+            }
+        }
+
+        // End half
+        function endHalf() {
+            if (confirm('Are you sure you want to end the current half?')) {
+                if (matchState.isFirstHalf) {
+                    matchState.isFirstHalf = false;
+                    matchState.matchTime = 20 * 60; // Reset to 20 minutes for second half
+                    alert('First half ended. Switching sides for second half.');
+                } else {
+                    // End of match
+                    clearInterval(timerInterval);
+                    showMatchResult();
+                }
+                
+                // Switch raiding team
+                matchState.raidingTeam = matchState.raidingTeam === 'A' ? 'B' : 'A';
+                updateUI();
+            }
+        }
+
+        // Undo last action
+        function undoLastAction() {
+            if (matchState.raidLog.length === 0) {
+                alert('No actions to undo');
+                return;
+            }
+
+            const lastAction = matchState.raidLog.pop();
+            
+            // In a real app, we would revert the state based on the last action
+            // For now, we'll just update the UI
+            updateUI();
+            saveMatchState();
+            
+            if (matchState.raidLog.length === 0) {
+                elements.undoBtn.disabled = true;
+            }
+        }
+
+        // Save match state to localStorage
+        function saveMatchState() {
+            localStorage.setItem(`kabaddi:match:${matchState.matchId}`, JSON.stringify(matchState));
+        }
+
+        // Load match state from localStorage
+        function loadMatchState(matchId) {
+            const savedState = localStorage.getItem(`kabaddi:match:${matchId}`);
+            if (savedState) {
+                return JSON.parse(savedState);
+            }
+            return null;
+        }
+
+        // Export to PDF
+        function exportToPdf() {
+            alert('Export to PDF functionality would be implemented here');
+            // In a real app, we would use jsPDF to generate a PDF
+        }
+
+        // Export to CSV
+        function exportToCsv() {
+            alert('Export to CSV functionality would be implemented here');
+            // In a real app, we would generate and download a CSV file
+        }
+
+        // Timer interval (would be managed in a real app)
+        let timerInterval;
+    </script>
+</body>
+</html>

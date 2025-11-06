@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Player Profile - PLAYKERS</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    /* Notification Styles */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 500;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateX(120%);
+      transition: transform 0.3s ease-in-out;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    
+    .notification.error {
+      background-color: #f44336;
+    }
+    
+    .notification.success {
+      background-color: #4caf50;
+    }
+    
+    .notification.warning {
+      background-color: #ff9800;
+    }
+    
+    .notification.info {
+      background-color: #2196f3;
+    }
+
+    :root {
+      --primary-color: #1a237e;
+      --primary-light: #534bae;
+      --primary-dark: #000051;
+      --secondary-color: #ff9800;
+      --text-primary: #333;
+      --text-secondary: #666;
+      --bg-light: #f8f9fa;
+      --border-color: #e0e0e0;
+      --success-color: #4caf50;
+      --danger-color: #f44336;
+      --warning-color: #ffc107;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: var(--text-primary);
+      background-color: #f5f6fa;
+    }
+
+    .profile-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Profile Header */
+    .profile-header {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profile-avatar {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid var(--primary-color);
+      margin: 0 auto 1.5rem;
+      transition: var(--transition);
+    }
+
+    .profile-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .profile-name {
+      font-size: 2.2rem;
+      color: var(--primary-color);
+      margin: 0.5rem 0 0.25rem;
+      font-weight: 700;
+    }
+
+    .profile-email {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+    }
+
+    .profile-meta {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 1.5rem 0;
+      color: var(--text-secondary);
+    }
+
+    .profile-meta span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Team Sections */
+    .team-sections {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    .team-section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      min-width: 280px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      flex: 1;
+      border-top: 4px solid var(--primary-color);
+    }
+
+    .team-section:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .team-section h3 {
+      color: var(--primary-color);
+      margin: 0 0 1rem;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .team-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .team-meta span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+    }
+
+    /* Stats Section */
+    .stats-section, .achievements-section, .edit-section, .recent-activity {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      color: var(--primary-color);
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--border-color);
+      font-weight: 600;
+    }
+
+    .sports-stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .sport-column {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .sport-column:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .sport-column h3 {
+      color: var(--primary-color);
+      margin: 0 0 1.5rem;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    
+    .cricket-stats-container {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .cricket-stats-container h3 {
+      color: var(--primary-color);
+      margin: 0 0 1.5rem 0;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .stats-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+    
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+    }
+    
+    .tab-btn:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    .tab-btn.active {
+      background: var(--primary-color);
+      color: white;
+    }
+    
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .stat-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
+      
+      .stat-card {
+        padding: 0.75rem 0.5rem;
+      }
+      
+      .stat-label {
+        font-size: 0.75rem;
+      }
+      
+      .stat-value {
+        font-size: 1.2rem;
+      }
+    }
+
+    .stat-card {
+      background: var(--bg-light);
+      padding: 1.25rem 1rem;
+      border-radius: 10px;
+      text-align: center;
+      transition: var(--transition);
+      border: 1px solid var(--border-color);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-sm);
+      border-color: var(--primary-light);
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin: 0.5rem 0;
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* Edit Form */
+    .edit-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+    }
+
+    .btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn i {
+      font-size: 1rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-secondary);
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      color: #e0e0e0;
+      margin-bottom: 1rem;
+      opacity: 0.7;
+    }
+
+    .empty-state p {
+      margin: 0;
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .sports-stats-container {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .profile-container {
+        padding: 0 1rem;
+      }
+      
+      .profile-header {
+        padding: 1.5rem 1rem;
+      }
+      
+      .team-sections {
+        flex-direction: column;
+      }
+      
+      .sports-stats-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .edit-form {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .profile-meta {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .section-title {
+        font-size: 1.3rem;
+      }
+      
+      .profile-name {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <nav>
+    <div class="menu-toggle">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+    <ul class="nav">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#">Matches</a></li>
+      <li><a href="#">Teams</a></li>
+      <li><a href="#">Venues</a></li>
+      <li><a href="profile.html" class="active">Profile</a></li>
+      <li><a href="#" id="logoutBtn">Logout</a></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="profile-container">
+  <!-- Profile Header -->
+  <section class="profile-header">
+    <img src="https://via.placeholder.com/150" alt="Profile Photo" class="profile-avatar" id="profilePhoto">
+    <h1 class="profile-name" id="playerName"></h1>
+    <div class="profile-email" id="playerEmail"></div>
+    <div class="profile-meta">
+      <span><i class="fas fa-birthday-cake"></i> <span id="playerAge"></span></span>
+    </div>
+    <div class="team-sections">
+      <div class="team-section" id="cricketTeam">
+        <h3><i class="fas fa-cricket"></i> Cricket</h3>
+        <div class="team-meta">
+          <span><i class="fas fa-users"></i> <span id="cricketTeamName">Not in a team</span></span>
+          <span><i class="fas fa-user-tag"></i> <span id="cricketRole">-</span></span>
+        </div>
+      </div>
+      <div class="team-section" id="footballTeam">
+        <h3><i class="fas fa-futbol"></i> Football</h3>
+        <div class="team-meta">
+          <span><i class="fas fa-users"></i> <span id="footballTeamName">Not in a team</span></span>
+          <span><i class="fas fa-user-tag"></i> <span id="footballPosition">-</span></span>
+        </div>
+      </div>
+      <div class="team-section" id="kabaddiTeam">
+        <h3><i class="fas fa-running"></i> Kabaddi</h3>
+        <div class="team-meta">
+          <span><i class="fas fa-users"></i> <span id="kabaddiTeamName">Not in a team</span></span>
+          <span><i class="fas fa-user-tag"></i> <span id="kabaddiPosition">-</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sports Statistics -->
+  <section class="stats-section">
+    <h2 class="section-title">Career Statistics</h2>
+    
+    <!-- Cricket Stats Tabs -->
+    <div class="cricket-stats-container">
+      <h3><i class="fas fa-cricket"></i> Cricket</h3>
+      <div class="stats-tabs">
+        <button class="tab-btn active" data-tab="batting">Batting</button>
+        <button class="tab-btn" data-tab="bowling">Bowling</button>
+        <button class="tab-btn" data-tab="fielding">Fielding</button>
+      </div>
+      
+      <!-- Batting Stats -->
+      <div id="batting-stats" class="tab-content" style="display: block;">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Matches</div><div class="stat-value" id="cricketMatches">0</div></div>
+          <div class="stat-card"><div class="stat-label">Innings</div><div class="stat-value" id="inningsBat">0</div></div>
+          <div class="stat-card"><div class="stat-label">Runs</div><div class="stat-value" id="runs">0</div></div>
+          <div class="stat-card"><div class="stat-label">Highest Score</div><div class="stat-value" id="hs">0</div></div>
+          <div class="stat-card"><div class="stat-label">Average</div><div class="stat-value" id="batAvg">0.00</div></div>
+          <div class="stat-card"><div class="stat-label">Strike Rate</div><div class="stat-value" id="sr">0.00</div></div>
+          <div class="stat-card"><div class="stat-label">50s</div><div class="stat-value" id="fifties">0</div></div>
+          <div class="stat-card"><div class="stat-label">100s</div><div class="stat-value" id="hundreds">0</div></div>
+          <div class="stat-card"><div class="stat-label">4s</div><div class="stat-value" id="fours">0</div></div>
+          <div class="stat-card"><div class="stat-label">6s</div><div class="stat-value" id="sixes">0</div></div>
+        </div>
+      </div>
+      
+      <!-- Bowling Stats -->
+      <div id="bowling-stats" class="tab-content" style="display: none;">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Matches</div><div class="stat-value" id="matchesBowled">0</div></div>
+          <div class="stat-card"><div class="stat-label">Innings</div><div class="stat-value" id="inningsBowl">0</div></div>
+          <div class="stat-card"><div class="stat-label">Overs</div><div class="stat-value" id="overs">0.0</div></div>
+          <div class="stat-card"><div class="stat-label">Wickets</div><div class="stat-value" id="wickets">0</div></div>
+          <div class="stat-card"><div class="stat-label">Best Bowling</div><div class="stat-value" id="bestBowl">0/0</div></div>
+          <div class="stat-card"><div class="stat-label">Average</div><div class="stat-value" id="bowlAvg">0.00</div></div>
+          <div class="stat-card"><div class="stat-label">Economy</div><div class="stat-value" id="econ">0.00</div></div>
+          <div class="stat-card"><div class="stat-label">Strike Rate</div><div class="stat-value" id="bowlSr">0.00</div></div>
+          <div class="stat-card"><div class="stat-label">4w Hauls</div><div class="stat-value" id="fourWkts">0</div></div>
+          <div class="stat-card"><div class="stat-label">5w Hauls</div><div class="stat-value" id="fiveWkts">0</div></div>
+        </div>
+      </div>
+      
+      <!-- Fielding Stats -->
+      <div id="fielding-stats" class="tab-content" style="display: none;">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Matches</div><div class="stat-value" id="matchesFielded">0</div></div>
+          <div class="stat-card"><div class="stat-label">Catches</div><div class="stat-value" id="catches">0</div></div>
+          <div class="stat-card"><div class="stat-label">Stumpings</div><div class="stat-value" id="stumpings">0</div></div>
+          <div class="stat-card"><div class="stat-label">Run Outs</div><div class="stat-value" id="runOuts">0</div></div>
+          <div class="stat-card"><div class="stat-label">Dismissals</div><div class="stat-value" id="dismissals">0</div></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Football Stats -->
+    <div class="sport-column" id="footballStats">
+      <h3><i class="fas fa-futbol"></i> Football</h3>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Matches Played</div><div class="stat-value" id="footballMatches">0</div></div>
+        <div class="stat-card"><div class="stat-label">Goals</div><div class="stat-value" id="footballGoals">0</div></div>
+        <div class="stat-card"><div class="stat-label">Assists</div><div class="stat-value" id="footballAssists">0</div></div>
+        <div class="stat-card"><div class="stat-label">Yellow Cards</div><div class="stat-value" id="footballYellowCards">0</div></div>
+        <div class="stat-card"><div class="stat-label">Red Cards</div><div class="stat-value" id="footballRedCards">0</div></div>
+      </div>
+    </div>
+      <!-- Kabaddi Stats -->
+      <div class="sport-column" id="kabaddiStats">
+        <h3><i class="fas fa-running"></i> Kabaddi</h3>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Matches Played</div><div class="stat-value" id="kabaddiMatches">0</div></div>
+          <div class="stat-card"><div class="stat-label">Raid Points</div><div class="stat-value" id="kabaddiRaidPoints">0</div></div>
+          <div class="stat-card"><div class="stat-label">Tackle Points</div><div class="stat-value" id="kabaddiTacklePoints">0</div></div>
+          <div class="stat-card"><div class="stat-label">Super Raids</div><div class="stat-value" id="kabaddiSuperRaids">0</div></div>
+          <div class="stat-card"><div class="stat-label">Super Tackles</div><div class="stat-value" id="kabaddiSuperTackles">0</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Achievements -->
+  <section class="achievements-section">
+    <h2 class="section-title">Achievements</h2>
+    <div class="achievements-grid" id="achievementsList"></div>
+  </section>
+
+  <!-- Profile Editor -->
+  <section class="edit-section">
+    <h2 class="section-title">Edit Profile</h2>
+    <form id="profileForm" class="edit-form">
+      <div class="form-group">
+        <label for="editName">Full Name</label>
+        <input type="text" id="editName" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="editAge">Age</label>
+        <input type="number" id="editAge" class="form-control" min="10" max="80" required>
+      </div>
+      <div class="form-group">
+        <label for="editRole">Role/Position</label>
+        <select id="editRole" class="form-control" required>
+          <option value="Batsman">Batsman</option>
+          <option value="Bowler">Bowler</option>
+          <option value="All-rounder">All-rounder</option>
+          <option value="Wicket-keeper">Wicket-keeper</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="editTeam">Team</label>
+        <input type="text" id="editTeam" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="profilePhotoUpload">Profile Photo</label>
+        <input type="file" id="profilePhotoUpload" class="form-control" accept="image/*">
+      </div>
+      <div class="form-group" style="grid-column: 1 / -1;">
+        <button type="submit" class="btn">Save Changes</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Recent Activity -->
+  <section class="recent-activity">
+    <h2 class="section-title">Recent Activity</h2>
+    <div id="recentMatches">
+      <p>No recent matches found.</p>
+    </div>
+  </section>
+</div>
+
+<!-- JS -->
+<script src="js/profile-utils.js"></script>
+<script>
+  // Fixed playerData definition
+  const playerData = {
+    name: '',
+    age: '',
+    email: '',
+    role: '',
+    team: '',
+    teams: {
+      cricket: { name: '', position: '', stats: { matches: 0, runs: 0, avg: 0.0, wickets: 0, strikeRate: 0.0 }},
+      football: { name: '', position: '', stats: { matches: 0, goals: 0, assists: 0, yellowCards: 0, redCards: 0 }},
+      kabaddi: { name: '', position: '', stats: { matches: 0, raidPoints: 0, tacklePoints: 0, superRaids: 0, superTackles: 0 }}
+    },
+    achievements: [],
+    recentMatches: []
+  };
+
+  function displayEmptyState(element, message) {
+    if (element) {
+      element.innerHTML = `<div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <p>${message}</p>
+      </div>`;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.ProfileUtils) {
+      window.ProfileUtils.initProfilePage();
+    }
+
+    // Teams info
+    if (!playerData.teams.football.name) {
+      document.getElementById('footballTeam').style.display = 'none';
+    }
+    if (!playerData.teams.kabaddi.name) {
+      document.getElementById('kabaddiTeam').style.display = 'none';
+    }
+
+    // Achievements
+    const achievementsList = document.getElementById('achievementsList');
+    if (playerData.achievements.length === 0) {
+      displayEmptyState(achievementsList, 'No achievements yet');
+    }
+
+    // Recent Matches
+    const recentMatches = document.getElementById('recentMatches');
+    if (playerData.recentMatches.length === 0) {
+      displayEmptyState(recentMatches, 'No recent matches found');
+    }
+
+    // Populate form
+    document.getElementById('editName').value = playerData.name;
+    document.getElementById('editAge').value = playerData.age;
+    document.getElementById('editRole').value = playerData.role;
+    document.getElementById('editTeam').value = playerData.team;
+
+    // Save changes
+    document.getElementById('profileForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      
+      const formData = {
+        name: document.getElementById('editName').value,
+        bio: document.getElementById('editBio')?.value || '',
+        dob: document.getElementById('editDob')?.value ? new Date(document.getElementById('editDob').value) : null,
+        place: document.getElementById('editPlace')?.value || '',
+        teams: {
+          cricket: {
+            name: document.getElementById('editTeam').value,
+            role: document.getElementById('editRole').value,
+            position: document.getElementById('editRole').value
+          }
+        }
+      };
+
+      try {
+        // Show loading state
+        const submitBtn = document.querySelector('#profileForm button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+        // Send update to server
+        const response = await window.ProfileUtils.apiRequest('/profile', {
+          method: 'PUT',
+          body: JSON.stringify(formData)
+        });
+
+        // Update UI with new data
+        window.ProfileUtils.updateProfileInfo(response.user);
+        
+        // Show success message
+        window.ProfileUtils.showNotification('Profile updated successfully!', 'success');
+        
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        window.ProfileUtils.showNotification(error.message || 'Failed to update profile', 'error');
+      } finally {
+        // Reset button state
+        const submitBtn = document.querySelector('#profileForm button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnText || 'Save Changes';
+        }
+      }
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', function () {
+      document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      localStorage.removeItem('token');
+      window.location.href = 'login.html';
+    });
+
+    // Profile photo upload
+    document.getElementById('profilePhotoUpload').addEventListener('change', async function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      // Show loading state
+      const uploadLabel = this.preElementSibling;
+      const originalText = uploadLabel.textContent;
+      uploadLabel.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+      
+      try {
+        const formData = new FormData();
+        formData.append('profilePhoto', file);
+        
+        // Upload the file
+        const response = await fetch('/api/upload-profile-photo', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${window.ProfileUtils.getAuthToken()}`
+          },
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to upload photo');
+        }
+        
+        const data = await response.json();
+        
+        // Update profile photo in UI
+        const profilePhoto = document.getElementById('profilePhoto');
+        if (profilePhoto) {
+          profilePhoto.src = data.photoUrl;
+          // Force browser to update the image cache
+          profilePhoto.src = `${data.photoUrl}?${new Date().getTime()}`;
+        }
+        
+        window.ProfileUtils.showNotification('Profile photo updated!', 'success');
+        
+      } catch (error) {
+        console.error('Error uploading photo:', error);
+        window.ProfileUtils.showNotification(error.message || 'Failed to upload photo', 'error');
+      } finally {
+        // Reset file input and label
+        e.target.value = '';
+        uploadLabel.textContent = originalText;
+      }
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Management - PLAYKERS BOOKING</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: #ececf2;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+        .match-hero {
+            width: 100%;
+            background: linear-gradient(100deg, #1a237e 60%, #3949ab 100%);
+            color: #fff;
+            text-align: center;
+            padding: 60px 20px 40px 20px;
+            border-radius: 0 0 32px 32px;
+            box-shadow: 0 4px 24px rgba(26,35,126,0.10);
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .match-hero h1 {
+            font-size: 2.5em;
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px rgba(26,35,126,0.10);
+        }
+        .match-hero p {
+            font-size: 1.2em;
+            font-weight: 500;
+            margin-bottom: 0;
+            color: #fffde7;
+            text-shadow: 0 1px 4px rgba(26,35,126,0.10);
+        }
+        .match-features-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            justify-content: center;
+            align-items: flex-start;
+            margin: 0 auto 40px auto;
+            max-width: 1200px;
+            padding: 0 16px;
+        }
+        .match-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(26,35,126,0.10);
+            padding: 36px 28px 32px 28px;
+            flex: 1 1 220px;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .match-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 8px 32px rgba(26,35,126,0.16);
+        }
+        .match-icon {
+            margin-bottom: 18px;
+        }
+        .match-card h2 {
+            color: #1a237e;
+            font-size: 1.3em;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        .match-card p {
+            color: #444;
+            font-size: 1em;
+            font-weight: 400;
+        }
+        @media (max-width: 900px) {
+            .match-features-section {
+                flex-direction: column;
+                gap: 28px;
+                align-items: center;
+            }
+            .match-card {
+                max-width: 95vw;
+            }
+        }
+        @media (max-width: 500px) {
+            .match-hero {
+                padding: 36px 8px 20px 8px;
+                border-radius: 0 0 18px 18px;
+            }
+            .match-hero h1 {
+                font-size: 1.3em;
+            }
+            .match-hero p {
+                font-size: 1em;
+            }
+            .match-card {
+                padding: 20px 8px 16px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="match-hero">
+        <h1>Match Management</h1>
+        <p>Organize, track, and manage your matches with ease.</p>
+    </div>
+    <div class="match-features-section">
+        <div class="match-card">
+            <div class="match-icon">
+                <!-- Create Match Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ffb300"/><rect x="11" y="7" width="2" height="10" rx="1" fill="#1a237e"/><rect x="7" y="11" width="10" height="2" rx="1" fill="#1a237e"/></svg>
+            </div>
+            <h2><a href="create-match.html">Create Match</a></h2>
+            <p>Set up a new match, choose sport, date, and venue.</p>
+        </div>
+        <div class="match-card">
+            <div class="match-icon">
+                <!-- Invite Players Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#43a047"/><ellipse cx="12" cy="10" rx="3" ry="3" fill="#fff"/><rect x="7" y="15" width="10" height="2" rx="1" fill="#fff"/></svg>
+            </div>
+            <h2><a href="invite-players.html">Invite Players</a></h2>
+            <p>Send match invites to friends via email or mobile.</p>
+        </div>
+        <div class="match-card">
+            <div class="match-icon">
+                <!-- Score Tracking Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#1976d2"/><rect x="8" y="8" width="8" height="8" rx="2" fill="#fff"/></svg>
+            </div>
+            <h2>Score Tracking</h2>
+            <p>Track live scores and match statistics for all sports.</p>
+        </div>
+        <div class="match-card">
+            <div class="match-icon">
+                <!-- Search Players Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#fff" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <h2><a href="search-player.html">Search Players</a></h2>
+            <p>Find and connect with other players in your area.</p>
+        </div>
+        <div class="match-card">
+            <div class="match-icon">
+                <!-- Match History Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ab47bc"/><rect x="9" y="8" width="6" height="8" rx="2" fill="#fff"/></svg>
+            </div>
+            <h2>Match History</h2>
+            <p>View your past matches, results, and performance.</p>
+        </div>
+        <div class="match-card">
+            <div class="match-icon">
+                <!-- Match Stats Icon -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ff7043"/><rect x="10" y="8" width="4" height="8" rx="2" fill="#fff"/></svg>
+            </div>
+            <h2>Match Stats</h2>
+            <p>Analyze player and team stats for every match.</p>
+        </div>
+    </div>
+</body>
+</html>
