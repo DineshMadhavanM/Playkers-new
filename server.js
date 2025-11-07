@@ -113,8 +113,47 @@ debugUsers();
 const app = express();
 const PORT = process.env.PORT || 5502;
 
+// Middleware for parsing JSON and urlencoded form data
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// CORS configuration
+app.use(cors({
+    origin: [
+        'http://localhost:3000',
+        'http://127.0.0.1:5502',
+        'http://localhost:5502',
+        'http://localhost:5500',
+        'http://127.0.0.1:5500',
+        'http://localhost:5501',
+        'http://127.0.0.1:5501'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Request logging
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Body:', req.body);
+    next();
+});
+
 
 // Middleware
+app.use(express.json()); // Parse JSON request bodies
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bodies
+
+// Log all incoming requests
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Body:', req.body);
+    next();
+});
+
 app.use(cors({
     origin: [
         'http://localhost:3000', 
@@ -133,9 +172,66 @@ app.use(cors({
 
 // Handle preflight requests
 app.options('*', cors());
-app.use(express.json());
 
-
+// Login route
+app.post('/api/login', async (req, res) => {
+    console.log('Login request received:', req.body);
+    
+    try {
+        if (!req.body) {
+            console.error('No request body received');
+            return res.status(400).json({
+                success: false,
+                error: 'No data received'
+            });
+        }
+        
+        const { email, password } = req.body;
+        
+        if (!email || !password) {
+            console.error('Missing email or password');
+            return res.status(400).json({
+                success: false,
+                error: 'Email and password are required'
+            });
+        }
+        
+        // Find user by email
+        const user = await User.findOne({ email });
+        
+        if (user) {
+            // In a real app, you should use bcrypt to compare hashed passwords
+            // For now, we'll assume the password matches if user is found
+            // Update last login time
+            user.lastLogin = new Date();
+            await user.save();
+            
+            console.log(`User ${user.email} logged in successfully`);
+            
+            return res.json({
+                success: true,
+                user: {
+                    id: user._id,
+                    email: user.email,
+                    name: user.name
+                }
+            });
+        } else {
+            console.log(`Login failed: No user found with email ${email}`);
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid email or password'
+            });
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        return res.status(500).json({
+            success: false,
+            error: 'Server error during login',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
 // Session configuration
 app.use(session({
     secret: 'your-secret-key',
@@ -201,104 +297,91 @@ app.use(passport.session());
 
 // Configure Passport to use the User model for sessions
 passport.serializeUser((user, done) => {
-    done(null, user._id);
+     done(null, user._id);
 });
-
 
 passport.deserializeUser(async (id, done) => {
-    try {
-        const user = await User.findById(id);
-        done(null, user);
-    } catch (error) {
-        done(error, null);
-    }
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (error) {
+        done(error, null);
+    }
 });
 
 
-// Debug route to catch all requests (at the beginning)
-app.use((req, res, next) => {
-    console.log(`🔍 ${req.method} ${req.url}`);
-    next();
-});
-
-
-// Function to store or update user in MongoDB
+// Function to store/update user in MongoDB
 async function storeUser(userData) {
-    try {
-        const user = await User.findOneAndUpdate(
-            { $or: [
-                { googleId: userData.googleId },
-                { email: userData.email }
-            ]},
-            {
-                $set: {
-                    name: userData.name,
-                    email: userData.email,
-                    profilePic: userData.picture || userData.profilePic,
-                    lastLogin: new Date()
-                },
-                $setOnInsert: {
-                    googleId: userData.googleId,
-                    createdAt: new Date()
-                }
-            },
-            { 
-                new: true, 
-                upsert: true, 
-                setDefaultsOnInsert: true 
-            }
-        );
-        return user;
-    } catch (error) {
-        console.error('Error saving user to MongoDB:', error);
-        throw error;
-    }
+    try {
+        const user = await User.findOneAndUpdate(
+            { $or: [
+                { googleId: userData.googleId },
+                { email: userData.email }
+            ]},
+            {
+                $set: {
+                    name: userData.name,
+                    email: userData.email,
+                    profilePic: userData.picture || userData.profilePic,
+                    lastLogin: new Date()
+                },
+                $setOnInsert: {
+                    googleId: userData.googleId,
+                    createdAt: new Date()
+                }
+            },
+            { 
+                new: true, 
+                upsert: true, 
+                setDefaultsOnInsert: true 
+            }
+        );
+        return user;
+    } catch (error) {
+        console.error('Error saving user to MongoDB:', error);
+        throw error;
+    }
 }
 
 
 // Passport configuration
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    passport.use(new GoogleStrategy({
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "http://localhost:5502/auth/google/callback"
-    }, async function(accessToken, refreshToken, profile, cb) {
-        try {
-            // Create user object from Google profile
-            const userData = {
-                name: profile.displayName,
-                email: profile.emails[0].value,
-                googleId: profile.id,
-                picture: profile.photos[0]?.value
-            };
-            
-            // Store user in MongoDB
-            const user = await storeUser(userData);
-            return cb(null, user);
-        } catch (error) {
-            console.error('Google OAuth error:', error);
-            return cb(error, null);
-        }
-    }));
-} else {
-    console.log('⚠️  Google OAuth credentials not found. Using demo mode.');
-    console.log('📝 To set up real Google OAuth:');
-    console.log('   1. Create a .env file in the project root');
-    console.log('   2. Add: GOOGLE_CLIENT_ID=your-client-id');
-    console.log('   3. Add: GOOGLE_CLIENT_SECRET=your-client-secret');
-    console.log('   4. Restart the server');
+if(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: "http://localhost:5502/auth/google/callback"
+    }, async function(accessToken, refreshToken, profile, cb) {
+        try {
+            // Create user object from Google profile
+            const userData = {
+                name: profile.displayName,
+                email: profile.emails?.[0]?.value, // Added optional chaining
+                googleId: profile.id,
+                picture: profile.photos?.[0]?.value // Added optional chaining
+            };
+
+            // Validate required fields
+            if (!userData.email) {
+                throw new Error('No email found in Google profile');
+            }
+            
+            // Store user in MongoDB
+            const user = await storeUser(userData);
+            return cb(null, user);
+        } catch (error) {
+            console.error('Error in Google OAuth callback:', error);
+            return cb(error, null);
+        }
+    }));
 }
-
-
-passport.serializeUser((user, done) => {
-    done(null, user);
-});
-
-
-passport.deserializeUser((user, done) => {
-    done(null, user);
-});
-
+ else {
+     console.log('⚠️   Google OAuth credentials not found. Using demo mode.');
+     console.log('📝 To set up real Google OAuth:');
+     console.log('   1. Create a .env file in the project root');
+     console.log('   2. Add: GOOGLE_CLIENT_ID=your-client-id');
+     console.log('   3. Add: GOOGLE_CLIENT_SECRET=your-client-secret');
+     console.log('   4. Restart the server');
+}
 
 // Routes
 
