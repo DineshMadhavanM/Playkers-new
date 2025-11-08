@@ -7,27 +7,27 @@
   <link rel="stylesheet" href="styles.css" />
   <style>
     body { background:#ececf2; min-height:100vh; margin:0; font-family:'Montserrat', Arial, sans-serif; }
-    .volleyball-hero { width:100%; background:linear-gradient(100deg,#1a237e 60%,#3949ab 100%); color:#fff; text-align:center; padding:60px 20px 40px; border-radius:0 0 32px 32px; box-shadow:0 4px 24px rgba(26,35,126,.10); margin-bottom:32px; }
+    .volleyball-hero { width:100%; background:linear-gradient(100deg,#00897b 55%,#00acc1 100%); color:#fff; text-align:center; padding:60px 20px 40px; border-radius:0 0 32px 32px; box-shadow:0 4px 24px rgba(0,137,123,.18); margin-bottom:32px; }
     .volleyball-hero h1 { font-size:2.5em; font-weight:800; margin-bottom:16px; letter-spacing:1px; text-shadow:0 2px 8px rgba(26,35,126,.10); }
     .volleyball-hero p { font-size:1.2em; font-weight:500; color:#fffde7; }
     .form-container { max-width:600px; margin:0 auto 40px; background:#fff; border-radius:20px; box-shadow:0 4px 24px rgba(26,35,126,.10); padding:40px 32px; }
-    .form-container h2 { color:#1a237e; font-size:1.8em; font-weight:700; margin-bottom:24px; text-align:center; }
+    .form-container h2 { color:#00897b; font-size:1.8em; font-weight:700; margin-bottom:24px; text-align:center; }
     .form-group { margin-bottom:24px; }
-    .form-group label { display:block; color:#1a237e; font-weight:600; margin-bottom:8px; font-size:1em; }
-    .form-group input, .form-group textarea { width:100%; padding:12px 16px; border:2px solid #e0e0e0; border-radius:8px; font-size:1em; transition:border-color .3s; box-sizing:border-box; }
-    .form-group input:focus, .form-group textarea:focus { outline:none; border-color:#1a237e; }
+    .form-group label { display:block; color:#00897b; font-weight:600; margin-bottom:8px; font-size:1em; }
+    .form-group input, .form-group textarea { width:100%; padding:12px 16px; border:2px solid #e0e0e0; border-radius:8px; font-size:1em; transition:border-color .3s, box-shadow .3s; box-sizing:border-box; }
+    .form-group input:focus, .form-group textarea:focus { outline:none; border-color:#00acc1; box-shadow:0 0 0 3px rgba(0,172,193,.15); }
     .form-group textarea { resize:vertical; min-height:100px; }
-    .submit-btn { width:100%; background:linear-gradient(90deg,#1a237e 0%,#3949ab 100%); color:#fff; border:none; padding:14px 24px; font-size:1.1em; font-weight:700; border-radius:8px; cursor:pointer; transition:transform .2s, box-shadow .2s; margin-top:16px; }
-    .submit-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(26,35,126,.3); }
+    .submit-btn { width:100%; background:linear-gradient(90deg,#00897b 0%,#00acc1 100%); color:#fff; border:none; padding:14px 24px; font-size:1.1em; font-weight:700; border-radius:8px; cursor:pointer; transition:transform .2s, box-shadow .2s; margin-top:16px; }
+    .submit-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,137,123,.35); }
     .success-message, .error-message { display:none; padding:16px; border-radius:8px; margin-bottom:24px; text-align:center; font-weight:600; }
     .success-message { background:#43a047; color:#fff; }
     .error-message { background:#e53935; color:#fff; }
     .grounds-list { max-width:1200px; margin:40px auto; padding:0 16px; }
-    .grounds-list h2 { color:#1a237e; font-size:2em; font-weight:700; margin-bottom:24px; text-align:center; }
+    .grounds-list h2 { color:#00897b; font-size:2em; font-weight:700; margin-bottom:24px; text-align:center; }
     .ground-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:24px; }
-    .ground-card { background:#fff; border-radius:16px; box-shadow:0 4px 16px rgba(26,35,126,.08); padding:24px; transition:transform .2s, box-shadow .2s; }
-    .ground-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(26,35,126,.16); }
-    .ground-card h3 { color:#1a237e; font-size:1.4em; font-weight:700; margin-bottom:12px; }
+    .ground-card { background:#fff; border-radius:16px; box-shadow:0 4px 16px rgba(0,137,123,.12); padding:24px; transition:transform .2s, box-shadow .2s; }
+    .ground-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,172,193,.25); }
+    .ground-card h3 { color:#00897b; font-size:1.4em; font-weight:700; margin-bottom:12px; }
     .ground-info { color:#444; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
   </style>
 </head>
