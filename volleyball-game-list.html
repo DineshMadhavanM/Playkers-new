@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volleyball Court Booking - PLAYKERS</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { background:#ececf2; min-height:100vh; margin:0; font-family:'Montserrat', Arial, sans-serif; }
+    .volleyball-hero { width:100%; background:linear-gradient(100deg,#1a237e 60%,#3949ab 100%); color:#fff; text-align:center; padding:60px 20px 40px; border-radius:0 0 32px 32px; box-shadow:0 4px 24px rgba(26,35,126,.10); margin-bottom:32px; }
+    .volleyball-hero h1 { font-size:2.5em; font-weight:800; margin-bottom:16px; letter-spacing:1px; text-shadow:0 2px 8px rgba(26,35,126,.10); }
+    .volleyball-hero p { font-size:1.2em; font-weight:500; color:#fffde7; }
+    .form-container { max-width:600px; margin:0 auto 40px; background:#fff; border-radius:20px; box-shadow:0 4px 24px rgba(26,35,126,.10); padding:40px 32px; }
+    .form-container h2 { color:#1a237e; font-size:1.8em; font-weight:700; margin-bottom:24px; text-align:center; }
+    .form-group { margin-bottom:24px; }
+    .form-group label { display:block; color:#1a237e; font-weight:600; margin-bottom:8px; font-size:1em; }
+    .form-group input, .form-group textarea { width:100%; padding:12px 16px; border:2px solid #e0e0e0; border-radius:8px; font-size:1em; transition:border-color .3s; box-sizing:border-box; }
+    .form-group input:focus, .form-group textarea:focus { outline:none; border-color:#1a237e; }
+    .form-group textarea { resize:vertical; min-height:100px; }
+    .submit-btn { width:100%; background:linear-gradient(90deg,#1a237e 0%,#3949ab 100%); color:#fff; border:none; padding:14px 24px; font-size:1.1em; font-weight:700; border-radius:8px; cursor:pointer; transition:transform .2s, box-shadow .2s; margin-top:16px; }
+    .submit-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(26,35,126,.3); }
+    .success-message, .error-message { display:none; padding:16px; border-radius:8px; margin-bottom:24px; text-align:center; font-weight:600; }
+    .success-message { background:#43a047; color:#fff; }
+    .error-message { background:#e53935; color:#fff; }
+    .grounds-list { max-width:1200px; margin:40px auto; padding:0 16px; }
+    .grounds-list h2 { color:#1a237e; font-size:2em; font-weight:700; margin-bottom:24px; text-align:center; }
+    .ground-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:24px; }
+    .ground-card { background:#fff; border-radius:16px; box-shadow:0 4px 16px rgba(26,35,126,.08); padding:24px; transition:transform .2s, box-shadow .2s; }
+    .ground-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(26,35,126,.16); }
+    .ground-card h3 { color:#1a237e; font-size:1.4em; font-weight:700; margin-bottom:12px; }
+    .ground-info { color:#444; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+  </style>
+</head>
+<body>
+  <div class="volleyball-hero">
+    <h1>Volleyball Court Booking</h1>
+    <p>Post your volleyball court details and connect with players</p>
+  </div>
+
+  <div class="form-container">
+    <h2>Post Volleyball Court Details</h2>
+    <div id="successMessage" class="success-message"></div>
+    <div id="errorMessage" class="error-message"></div>
+
+    <form id="groundForm">
+      <div class="form-group">
+        <label for="posterName">Your Name *</label>
+        <input type="text" id="posterName" name="posterName" required placeholder="Enter your name" />
+      </div>
+      <div class="form-group">
+        <label for="groundName">Court Name *</label>
+        <input type="text" id="groundName" name="groundName" required placeholder="Enter court name" />
+      </div>
+      <div class="form-group">
+        <label for="location">Location *</label>
+        <input type="text" id="location" name="location" required placeholder="Enter court location" />
+      </div>
+      <div class="form-group">
+        <label for="phoneNumber">Phone Number *</label>
+        <input type="tel" id="phoneNumber" name="phoneNumber" required placeholder="Enter contact number" pattern="[0-9]{10,15}" />
+      </div>
+      <div class="form-group">
+        <label for="description">Description (Optional)</label>
+        <textarea id="description" name="description" placeholder="Add any additional details about the court"></textarea>
+      </div>
+      <button type="submit" class="submit-btn">Post Court Details</button>
+    </form>
+  </div>
+
+  <div class="grounds-list">
+    <h2>Available Volleyball Courts</h2>
+    <div id="groundCards" class="ground-cards"></div>
+  </div>
+
+  <script>
+    let grounds = JSON.parse(localStorage.getItem('volleyballCourts')) || [];
+
+    function displayGrounds() {
+      const groundCards = document.getElementById('groundCards');
+      groundCards.innerHTML = '';
+      if (grounds.length === 0) {
+        groundCards.innerHTML = '<p style="text-align:center;color:#666;grid-column:1/-1;">No courts posted yet. Be the first to post!</p>';
+        return;
+      }
+      grounds.forEach((ground) => {
+        const card = document.createElement('div');
+        card.className = 'ground-card';
+        card.innerHTML = `
+          <div style="color:#666;font-size:.9em;margin-bottom:8px;">Posted by: <strong>${ground.posterName || 'Unknown'}</strong></div>
+          <h3>${ground.groundName}</h3>
+          <div class="ground-info">📍 <span>${ground.location}</span></div>
+          <div class="ground-info">📞 <span>${ground.phoneNumber}</span></div>
+          ${ground.description ? `<p style=\"color:#666;margin-top:12px;font-size:.95em;\">${ground.description}</p>` : ''}
+        `;
+        groundCards.appendChild(card);
+      });
+    }
+
+    document.getElementById('groundForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const successMessage = document.getElementById('successMessage');
+      const errorMessage = document.getElementById('errorMessage');
+      successMessage.style.display = 'none';
+      errorMessage.style.display = 'none';
+
+      const formData = {
+        posterName: document.getElementById('posterName').value.trim(),
+        groundName: document.getElementById('groundName').value.trim(),
+        location: document.getElementById('location').value.trim(),
+        phoneNumber: document.getElementById('phoneNumber').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        postedDate: new Date().toISOString()
+      };
+
+      if (!/^[0-9]{10,15}$/.test(formData.phoneNumber)) {
+        errorMessage.textContent = 'Please enter a valid phone number (10-15 digits)';
+        errorMessage.style.display = 'block';
+        return;
+      }
+
+      try {
+        grounds.unshift(formData);
+        localStorage.setItem('volleyballCourts', JSON.stringify(grounds));
+        successMessage.textContent = 'Court details posted successfully!';
+        successMessage.style.display = 'block';
+        document.getElementById('groundForm').reset();
+        displayGrounds();
+        setTimeout(() => document.querySelector('.grounds-list').scrollIntoView({ behavior: 'smooth' }), 500);
+        setTimeout(() => (successMessage.style.display = 'none'), 5000);
+      } catch (err) {
+        console.error(err);
+        errorMessage.textContent = 'Failed to post court details. Please try again.';
+        errorMessage.style.display = 'block';
+      }
+    });
+
+    displayGrounds();
+  </script>
+</body>
+</html>
