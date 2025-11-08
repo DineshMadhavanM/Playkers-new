@@ -1,0 +1,9 @@
+# <type>(<scope>): <short summary>
+
+# Types: feat, fix, docs, chore, refactor, test, ci, build
+# Scope: optional module/area (e.g., auth, api, ui)
+# Summary: imperative mood, <= 72 chars
+
+# Body (motivation, context)
+
+# Footer (BREAKING CHANGE, closes #123)
