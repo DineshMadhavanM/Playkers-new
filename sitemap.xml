@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>http://localhost:5502/</loc>
+  </url>
+  <url>
+    <loc>http://localhost:5502/cricket-game-list.html</loc>
+  </url>
+  <url>
+    <loc>http://localhost:5502/football-game-list.html</loc>
+  </url>
+  <url>
+    <loc>http://localhost:5502/tennis-game-list.html</loc>
+  </url>
+  <url>
+    <loc>http://localhost:5502/kabaddi-game-list.html</loc>
+  </url>
+  <url>
+    <loc>http://localhost:5502/basketball-game-list.html</loc>
+  </url>
+  <url>
+    <loc>http://localhost:5502/volleyball-game-list.html</loc>
+  </url>
+  <url>
+    <loc>http://localhost:5502/ground-list.html</loc>
+  </url>
+</urlset>
