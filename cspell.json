@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "language": "en",
+  "words": ["Playkers", "OAuth", "Mongoose", "MongoDB"],
+  "ignorePaths": ["node_modules", "dist", "build", ".git"],
+  "enableFiletypes": ["html", "js", "json", "md"],
+  "useGitignore": true
+}
