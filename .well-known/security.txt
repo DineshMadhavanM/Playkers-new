@@ -1,0 +1,3 @@
+Contact: mailto:security@example.com
+Policy: https://github.com/DineshMadhavanM/Playkers-new/blob/master/SECURITY.md
+Expires: 2026-12-31T00:00:00.000Z
