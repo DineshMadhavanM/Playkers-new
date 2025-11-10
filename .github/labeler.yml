@@ -1,0 +1,11 @@
+docs:
+  - "docs/**/*"
+  - "**/*.md"
+ci:
+  - ".github/workflows/*"
+config:
+  - ".*"
+frontend:
+  - "**/*.html"
+backend:
+  - "**/*.js"
