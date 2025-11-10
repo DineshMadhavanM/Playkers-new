@@ -1,0 +1,20 @@
+{
+  "footballGrounds": [
+    {
+      "posterName": "Admin",
+      "groundName": "City Football Arena",
+      "location": "Downtown",
+      "phoneNumber": "9999999999",
+      "description": "5-a-side turf"
+    }
+  ],
+  "cricketGrounds": [
+    {
+      "posterName": "Admin",
+      "groundName": "Green Park",
+      "location": "North Zone",
+      "phoneNumber": "8888888888",
+      "description": "Box cricket nets"
+    }
+  ]
+}
