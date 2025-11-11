@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: Playkers Booking
+message: If you use this software, please cite it as below.
+authors:
+  - family-names: Madhavan
+    given-names: Dinesh
+repository-code: https://github.com/DineshMadhavanM/Playkers-new
+license: MIT
+year: 2025
