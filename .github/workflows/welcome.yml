@@ -1,0 +1,17 @@
+name: Welcome
+
+on:
+  pull_request:
+  issues:
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: |
+            👋 Thanks for opening your first issue! Be sure to check out CONTRIBUTING.md and SUPPORT.md.
+          pr-message: |
+            🎉 Thanks for your first PR! Please ensure checks pass and follow the PR template.
