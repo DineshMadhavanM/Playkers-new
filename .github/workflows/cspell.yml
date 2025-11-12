@@ -1,0 +1,20 @@
+name: cspell
+
+on:
+  pull_request:
+  push:
+    branches: [ master ]
+
+jobs:
+  spellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install cspell
+        run: npm i -g cspell@8
+      - name: Run cspell
+        run: cspell lint "**/*.*" --config cspell.json --no-progress --relative
