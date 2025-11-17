@@ -20,7 +20,7 @@
     "multer": "^2.0.2",
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
-    "uuid": "^11.1.0"
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",
